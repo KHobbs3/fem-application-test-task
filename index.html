@@ -154,7 +154,7 @@ const CONFIG = {
 
   // Paste the /exec URL you get after deploying the Apps Script below.
   // Leave blank to fall back to this artifact's built-in storage (not linked to Drive).
-  BACKEND_URL: "https://docs.google.com/spreadsheets/d/1MLvNeE6646Eda4O8O5AK4PADD5sVgw6-vQf8gLnHE50/edit?gid=0#gid=0",
+  BACKEND_URL: "https://script.google.com/macros/s/AKfycbxmNxzrE4BnHyUkrubLPiPxfwPtEb70AjOtXOW204NgNMyXRjKBSCnjQFUQeTEw2u_B/exec",
 
   QUESTIONS: [
     {
@@ -302,33 +302,49 @@ async function handleStart(){
     errEl.style.display = 'block';
     return;
   }
-
-  let existing = await loadRecord(email);
-
-  if(existing && existing.status === 'submitted'){
-    renderAlreadySubmitted(existing);
+  if(!usingBackend && typeof window.storage === 'undefined'){
+    errEl.textContent = 'Setup error: BACKEND_URL is not set in CONFIG, and this fallback storage only works inside Claude.ai. Paste your Apps Script /exec URL into CONFIG.BACKEND_URL.';
+    errEl.style.display = 'block';
     return;
   }
 
-  if(existing && existing.status === 'in_progress'){
-    record = existing;
-  } else {
-    record = {
-      name, email,
-      startTime: new Date().toISOString(),
-      durationMinutes: CONFIG.DURATION_MINUTES,
-      answers: {},
-      violations: 0,
-      violationLog: [],
-      status: 'in_progress',
-      submittedTime: null
-    };
-    await saveRecord(record);
+  const btn = document.getElementById('btn-start');
+  btn.disabled = true;
+  btn.textContent = 'Starting…';
+
+  try{
+    let existing = await loadRecord(email);
+
+    if(existing && existing.status === 'submitted'){
+      renderAlreadySubmitted(existing);
+      return;
+    }
+
+    if(existing && existing.status === 'in_progress'){
+      record = existing;
+    } else {
+      record = {
+        name, email,
+        startTime: new Date().toISOString(),
+        durationMinutes: CONFIG.DURATION_MINUTES,
+        answers: {},
+        violations: 0,
+        violationLog: [],
+        status: 'in_progress',
+        submittedTime: null
+      };
+      await saveRecord(record);
+    }
+    violations = record.violations || 0;
+    renderTask();
+    requestFullscreenSoft();
+    attachMonitors();
+  } catch(err){
+    errEl.textContent = 'Could not connect to the backend. Check that BACKEND_URL is correct and the Apps Script is deployed with access set to "Anyone". (' + err.message + ')';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Start test';
   }
-  violations = record.violations || 0;
-  renderTask();
-  requestFullscreenSoft();
-  attachMonitors();
 }
 
 function renderAlreadySubmitted(rec){
