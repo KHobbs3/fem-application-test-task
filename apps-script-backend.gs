@@ -34,8 +34,8 @@
 const ADMIN_TOKEN = "changeme123"; // must match CONFIG.ADMIN_PASSWORD in the HTML
 
 const HEADERS = [
-  "email", "name", "startTime", "submittedTime", "status",
-  "violations", "violationLog", "answers"
+  "email", "name", "startTime", "submittedTime", "status", "violations", "violationLog",
+  "q1_github_link", "q2", "q3", "q4"
 ];
 
 function getSheet_() {
@@ -60,7 +60,24 @@ function findRowByEmail_(sheet, email) {
   return -1;
 }
 
+function formatViolationLog_(log) {
+  if (!log || !log.length) return "";
+  return log.map(v => {
+    const time = v.at ? new Date(v.at).toLocaleTimeString() : "";
+    return `${v.type} @ ${time}`;
+  }).join("\n");
+}
+
+function parseViolationLog_(str) {
+  if (!str) return [];
+  // Reconstructed only for resuming an in-progress test; exact timestamps
+  // aren't recoverable from the readable format, but the count is preserved
+  // so a resumed session keeps accumulating flags correctly.
+  return str.split("\n").filter(Boolean).map(line => ({ type: line, at: null }));
+}
+
 function recordToRow_(record) {
+  const answers = record.answers || {};
   return [
     record.email || "",
     record.name || "",
@@ -68,8 +85,11 @@ function recordToRow_(record) {
     record.submittedTime || "",
     record.status || "",
     record.violations || 0,
-    JSON.stringify(record.violationLog || []),
-    JSON.stringify(record.answers || {})
+    formatViolationLog_(record.violationLog),
+    answers.q1 || "",
+    answers.q2 || "",
+    answers.q3 || "",
+    answers.q4 || ""
   ];
 }
 
@@ -81,13 +101,9 @@ function rowToRecord_(row) {
     submittedTime: row[3],
     status: row[4],
     violations: row[5],
-    violationLog: safeParse_(row[6], []),
-    answers: safeParse_(row[7], {})
+    violationLog: parseViolationLog_(row[6]),
+    answers: { q1: row[7], q2: row[8], q3: row[9], q4: row[10] }
   };
-}
-
-function safeParse_(str, fallback) {
-  try { return JSON.parse(str); } catch (e) { return fallback; }
 }
 
 function doPost(e) {

@@ -7,16 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* =========================================================
-     FEM-INSPIRED PALETTE & TYPE
-     I could not scrape familyempowermentmedia.org's exact compiled
-     CSS (Wix bundles it, and my fetch/network tools can't reach
-     their asset host to sample pixel colors). These are a close,
-     reasonable approximation — warm terracotta/orange accent,
-     deep teal, cream background, which is consistent with what's
-     visible on their site. If you have their brand guide or can
-     eyedropper exact hex codes yourself, just swap the values below.
-     ========================================================= */
   :root{
     --bg: #faf6ef;
     --panel: #ffffff;
@@ -24,9 +14,9 @@
     --line: #e4dbc8;
     --text: #2b2620;
     --text-dim: #7a7264;
-    --accent: #e07b3f;        /* terracotta/orange, FEM-style warm accent */
+    --accent: #e07b3f;
     --accent-dim: #f0c9ab;
-    --teal: #285e56;          /* deep teal, secondary FEM tone */
+    --teal: #285e56;
     --danger: #c94f3f;
     --ok: #3f8a63;
     --mono: 'Karla', -apple-system, sans-serif;
@@ -136,33 +126,146 @@
     background:#fbe9e4; border:1px solid var(--danger); color:#8f3a2c; border-radius:8px;
     padding:12px 14px; font-size:13px; margin-bottom:16px;
   }
+  /* Question 1 embedded evidence styles */
+  .ev-box{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:16px; margin:12px 0; }
+  .ev-label{ font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--teal); margin-bottom:10px; }
+  .chart-row{ display:flex; gap:32px; align-items:flex-end; margin-bottom:10px; }
+  .bar-group{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .bar-pair{ display:flex; gap:5px; align-items:flex-end; }
+  .bar{ width:30px; border-radius:3px 3px 0 0; }
+  .bar-num{ font-size:10px; font-weight:600; text-align:center; color:var(--text); }
+  .bar-tick{ font-size:10px; color:var(--text-dim); text-align:center; }
+  .group-lbl{ font-size:11px; color:var(--text-dim); text-align:center; margin-top:4px; }
+  .legend-row{ display:flex; gap:16px; margin-top:8px; }
+  .legend-item{ display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-dim); }
+  .legend-swatch{ width:10px; height:10px; border-radius:2px; }
+  .ev-table{ width:100%; border-collapse:collapse; font-size:12px; margin-top:4px; }
+  .ev-table th{ background:var(--panel-2); font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-dim); padding:6px 8px; border-bottom:1px solid var(--line); }
+  .ev-table td{ padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .ev-table tr:last-child td{ border-bottom:none; }
+  .ev-table tr.hl td{ background:#f0f7f4; }
+  .sig-hi{ display:inline-block; background:#e2f1e8; color:#2e6b47; font-size:10px; font-weight:600; padding:1px 6px; border-radius:4px; margin-left:4px; }
+  .sig-lo{ display:inline-block; background:#fef3e2; color:#8a5a10; font-size:10px; font-weight:600; padding:1px 6px; border-radius:4px; margin-left:4px; }
+  .eff{ font-weight:600; color:var(--teal); }
+  .q-part{ margin-top:12px; font-size:13.5px; font-weight:600; color:var(--text); }
+  .q-part-body{ font-size:13px; color:var(--text-dim); margin-top:3px; line-height:1.6; }
 </style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
 
 <script>
-/* =========================================================
-   CONFIGURE YOUR TEST HERE
-   ========================================================= */
 const CONFIG = {
   TASK_TITLE: "Written Test Task",
-  INTRO_TEXT: `You'll have 90 minutes once you click Start. Question 1 is optional. Questions 2-4 are required.`,
-  DEADLINE_ISO: "2026-08-31T23:59:00",   // candidates can START anytime before this
+  INTRO_TEXT: `You'll have 90 minutes once you click Start. Questions 1–4 are required.`,
+  DEADLINE_ISO: "2026-09-15T23:59:00",
   DURATION_MINUTES: 90,
-  ADMIN_PASSWORD: "changeme123",          // change this before sharing the link
-
-  // Paste the /exec URL you get after deploying the Apps Script below.
-  // Leave blank to fall back to this artifact's built-in storage (not linked to Drive).
+  ADMIN_PASSWORD: "changeme123",
   BACKEND_URL: "https://script.google.com/macros/s/AKfycbxmNxzrE4BnHyUkrubLPiPxfwPtEb70AjOtXOW204NgNMyXRjKBSCnjQFUQeTEw2u_B/exec",
 
   QUESTIONS: [
     {
       id: "q1",
-      type: "link",
-      label: "GitHub or a coding project you've completed",
-      optional: true,
-      prompt: "Optional — paste a link to your GitHub profile or a specific project you're proud of."
+      type: "text",
+      label: "Question 1 — effect size selection",
+      optional: false,
+      prompt: `<div style="white-space:normal;">
+<p style="margin:0 0 10px;font-size:13.5px;line-height:1.65;"><strong>Context.</strong> You are building a cost-effectiveness model for a radio family planning campaign being rolled out in Nigeria. The evidence base is a randomised controlled trial conducted in Burkina Faso (Glennerster et al., 2026). The trial evaluated a 2.5-year radio campaign promoting modern contraception across 16 radio station clusters — 8 treatment, 8 control. The study reports two main effect sizes on modern contraceptive prevalence rate (mCPR).</p>
+
+<div class="ev-box">
+  <div class="ev-label">Figure — impact on mCPR (endline survey, December 2018)</div>
+  <div class="chart-row">
+    <div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;">All women (N = 6,728)</div>
+      <div class="bar-pair">
+        <div class="bar-group">
+          <div class="bar-num">29.5%</div>
+          <div class="bar" style="height:80px;background:#5a7fc2;"></div>
+          <div class="bar-tick">Control</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-num">35.5%</div>
+          <div class="bar" style="height:96px;background:#b07860;"></div>
+          <div class="bar-tick">Treat.</div>
+        </div>
+      </div>
+      <div class="group-lbl">+5.9pp &nbsp;<span class="sig-lo">p = 0.046</span></div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;">Women with a radio at baseline (N = 3,877)</div>
+      <div class="bar-pair">
+        <div class="bar-group">
+          <div class="bar-num">29.1%</div>
+          <div class="bar" style="height:79px;background:#5a7fc2;"></div>
+          <div class="bar-tick">Control</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-num">36.7%</div>
+          <div class="bar" style="height:99px;background:#b07860;"></div>
+          <div class="bar-tick">Treat.</div>
+        </div>
+      </div>
+      <div class="group-lbl">+7.6pp &nbsp;<span class="sig-hi">p = 0.007</span></div>
+    </div>
+  </div>
+  <div class="legend-row">
+    <div class="legend-item"><div class="legend-swatch" style="background:#5a7fc2;"></div>Non-campaign areas</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#b07860;"></div>Campaign areas</div>
+  </div>
+</div>
+
+<div class="ev-box">
+  <div class="ev-label">Table — selected rows from Table 2 (Glennerster et al., 2022)</div>
+  <table class="ev-table">
+    <thead>
+      <tr>
+        <th style="width:36%;">Outcome</th>
+        <th>Population<br>control mean</th>
+        <th>Population<br>effect</th>
+        <th>Radio owners<br>control mean</th>
+        <th>Radio owners<br>effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="hl">
+        <td><strong>Currently using modern contraception (mCPR)</strong></td>
+        <td>0.295</td>
+        <td class="eff">+0.059** <span class="sig-lo">p=0.046</span></td>
+        <td>0.291</td>
+        <td class="eff">+0.076*** <span class="sig-hi">p=0.007</span></td>
+      </tr>
+      <tr>
+        <td>Often listen to the radio</td>
+        <td>0.872</td>
+        <td>+0.023</td>
+        <td>0.882</td>
+        <td>+0.029</td>
+      </tr>
+      <tr>
+        <td>Heard of FP on the radio in the last month</td>
+        <td>0.633</td>
+        <td>+0.170***</td>
+        <td>0.631</td>
+        <td>+0.193***</td>
+      </tr>
+      <tr>
+        <td>Sensitisation programs (listened last week)</td>
+        <td>0.133</td>
+        <td>+0.097***</td>
+        <td>0.145</td>
+        <td>+0.090***</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size:10.5px;color:var(--text-dim);margin-top:8px;">* p&lt;0.1 &nbsp;** p&lt;0.05 &nbsp;*** p&lt;0.01. &nbsp;Endline survey data, December 2018.</div>
+</div>
+
+<div class="q-part">Part A</div>
+<div class="q-part-body">Which effect size would you use as the basis for your cost-effectiveness model — the population-level ITT estimate (all women, +5.9pp) or the radio owner estimate (+7.6pp) — and why?</div>
+
+<div class="q-part" style="margin-top:10px;">Part B</div>
+<div class="q-part-body">Having reviewed the evidence above, would you change your answer? What does the difference in statistical significance between the two estimates tell you about which is more reliable for extrapolation to a new setting? What are the implications for cost-effectiveness modelling?</div>
+</div>`
     },
     {
       id: "q2",
@@ -173,10 +276,11 @@ const CONFIG = {
     },
     {
       id: "q3",
-      type: "text",
-      label: "Question 3",
+      type: "linktext",
+      label: "Question 3 — BOTEC: mass media and intimate partner violence",
       optional: false,
-      prompt: "TBD — replace with your third question."
+      linkPrompt: `Create a back-of-the-envelope calculation (BOTEC) in Google Sheets estimating the cost-effectiveness of a mass media campaign aimed at reducing intimate partner violence (IPV). Use your own numbers for inputs — you will not be assessed on the specific values chosen, only on your reasoning and model structure. Once complete, paste a shareable link below (ensure permissions are set to "Anyone with the link can view").`,
+      textPrompt: `In the box below, summarise: (a) your key takeaways from the model, (b) the main assumptions you made and why, and (c) the most important limitations of your approach.`
     },
     {
       id: "q4",
@@ -187,7 +291,6 @@ const CONFIG = {
     }
   ]
 };
-/* ========================================================= */
 
 const app = document.getElementById('app');
 let record = null;
@@ -202,13 +305,12 @@ function fmtTime(ms){
   return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
 }
 
-/* ---------- storage layer: Google Sheet via Apps Script, or fallback to window.storage ---------- */
 function keyFor(email){ return 'submission:' + email.trim().toLowerCase(); }
 
 async function backendPost(payload){
   const res = await fetch(CONFIG.BACKEND_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight with Apps Script
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(payload)
   });
   return res.json();
@@ -260,11 +362,10 @@ async function listRecords(){
 
 function pastDeadline(){ return new Date() > new Date(CONFIG.DEADLINE_ISO); }
 
-/* ---------- entry screen ---------- */
 function renderEntry(){
   const deadlineStr = new Date(CONFIG.DEADLINE_ISO).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'});
   app.innerHTML = `
-    ${!usingBackend ? `<div class="config-warn">BACKEND_URL isn't set, so submissions are only stored inside this artifact — not in Google Drive. See the setup notes in the file comments to connect a Google Sheet.</div>` : ''}
+    ${!usingBackend ? `<div class="config-warn">BACKEND_URL isn't set — submissions stored in artifact only.</div>` : ''}
     <div class="eyebrow">Test Portal</div>
     <h1>${CONFIG.TASK_TITLE}</h1>
     <div class="sub">${CONFIG.INTRO_TEXT}</div>
@@ -303,7 +404,7 @@ async function handleStart(){
     return;
   }
   if(!usingBackend && typeof window.storage === 'undefined'){
-    errEl.textContent = 'Setup error: BACKEND_URL is not set in CONFIG, and this fallback storage only works inside Claude.ai. Paste your Apps Script /exec URL into CONFIG.BACKEND_URL.';
+    errEl.textContent = 'Setup error: BACKEND_URL is not set and fallback storage only works inside Claude.ai.';
     errEl.style.display = 'block';
     return;
   }
@@ -314,12 +415,10 @@ async function handleStart(){
 
   try{
     let existing = await loadRecord(email);
-
     if(existing && existing.status === 'submitted'){
       renderAlreadySubmitted(existing);
       return;
     }
-
     if(existing && existing.status === 'in_progress'){
       record = existing;
     } else {
@@ -340,7 +439,7 @@ async function handleStart(){
     requestFullscreenSoft();
     attachMonitors();
   } catch(err){
-    errEl.textContent = 'Could not connect to the backend. Check that BACKEND_URL is correct and the Apps Script is deployed with access set to "Anyone". (' + err.message + ')';
+    errEl.textContent = 'Could not connect to the backend. (' + err.message + ')';
     errEl.style.display = 'block';
     btn.disabled = false;
     btn.textContent = 'Start test';
@@ -363,22 +462,40 @@ function timeRemainingMs(){
   return end - Date.now();
 }
 
-/* ---------- task screen ---------- */
 function renderTask(){
   const qBlocks = CONFIG.QUESTIONS.map(q=>{
     const val = (record.answers && record.answers[q.id]) || '';
+
     if(q.type === 'link'){
       return `
         <div class="q-block">
           <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
           <div class="sub" style="margin-bottom:8px;">${q.prompt}</div>
-          <input type="url" data-qid="${q.id}" class="q-input" placeholder="https://github.com/..." value="${val.replace(/"/g,'&quot;')}">
+          <input type="url" data-qid="${q.id}" class="q-input" placeholder="https://..." value="${val.replace(/"/g,'&quot;')}">
         </div>`;
     }
+
+    if(q.type === 'linktext'){
+      const linkVal = (record.answers && record.answers[q.id + '_link']) || '';
+      const textVal = (record.answers && record.answers[q.id + '_text']) || '';
+      return `
+        <div class="q-block">
+          <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
+          <div class="sub" style="margin-bottom:10px;white-space:normal;">${q.linkPrompt}</div>
+          <label>Google Sheets link</label>
+          <input type="url" data-qid="${q.id}_link" class="q-input" placeholder="https://docs.google.com/spreadsheets/..." value="${linkVal.replace(/"/g,'&quot;')}">
+          <label style="margin-top:16px;">Summary of takeaways, assumptions and limitations</label>
+          <div class="sub" style="margin-bottom:6px;font-size:13px;">${q.textPrompt}</div>
+          <textarea data-qid="${q.id}_text" class="q-input no-paste" placeholder="Write your summary here...">${textVal}</textarea>
+          <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in the summary field — please type your answer directly.</div>
+        </div>`;
+    }
+
+    /* default: text with prompt as HTML */
     return `
       <div class="q-block">
         <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
-        <div class="sub" style="margin-bottom:8px;">${q.prompt}</div>
+        <div class="sub" style="margin-bottom:8px;white-space:normal;">${q.prompt}</div>
         <textarea data-qid="${q.id}" class="q-input no-paste" placeholder="Write your answer here...">${val}</textarea>
         <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in this field — please type your answer directly.</div>
       </div>`;
@@ -417,7 +534,7 @@ function renderTask(){
         logViolation('blocked paste attempt');
       });
     });
-    el.addEventListener('contextmenu', (e)=> e.preventDefault()); // blocks right-click > Paste
+    el.addEventListener('contextmenu', (e)=> e.preventDefault());
   });
   document.getElementById('btn-submit').onclick = ()=> attemptSubmit(false);
   updateFlagUI();
@@ -444,14 +561,21 @@ function tick(){
 
 function attemptSubmit(auto){
   if(!auto){
-    const missing = CONFIG.QUESTIONS.filter(q=>{
-      if(q.optional) return false;
-      const val = (record.answers && record.answers[q.id]) || '';
-      return !val.trim();
+    const missing = [];
+    CONFIG.QUESTIONS.forEach(q=>{
+      if(q.optional) return;
+      if(q.type === 'linktext'){
+        const linkVal = (record.answers && record.answers[q.id + '_link']) || '';
+        const textVal = (record.answers && record.answers[q.id + '_text']) || '';
+        if(!linkVal.trim() || !textVal.trim()) missing.push(q.label);
+      } else {
+        const val = (record.answers && record.answers[q.id]) || '';
+        if(!val.trim()) missing.push(q.label);
+      }
     });
     if(missing.length){
       const err = document.getElementById('submit-error');
-      err.textContent = `Please answer: ${missing.map(q=>q.label).join(', ')}`;
+      err.textContent = `Please complete: ${missing.join(', ')}`;
       err.style.display = 'block';
       return;
     }
@@ -534,7 +658,6 @@ function renderDone(auto){
   `;
 }
 
-/* ---------- admin view ---------- */
 function renderAdminLogin(){
   app.innerHTML = `
     <div class="eyebrow">Test Portal</div>
@@ -579,7 +702,7 @@ async function renderAdminList(){
   window.__adminRecords = records;
 
   app.innerHTML = `
-    ${!usingBackend ? `<div class="config-warn">Not connected to Google Sheets — showing this artifact's built-in storage only.</div>` : ''}
+    ${!usingBackend ? `<div class="config-warn">Not connected to Google Sheets — showing artifact storage only.</div>` : ''}
     <div class="eyebrow">Test Portal</div>
     <h1>Submissions (${records.length})</h1>
     <div class="panel" style="overflow-x:auto;">
@@ -606,6 +729,17 @@ window.viewAnswer = function(email){
   const el = document.getElementById('answer-detail');
   const logRows = (rec.violationLog||[]).map(v=>`<tr><td>${v.type}</td><td>${new Date(v.at).toLocaleString()}</td></tr>`).join('');
   const answerBlocks = CONFIG.QUESTIONS.map(q=>{
+    if(q.type === 'linktext'){
+      const linkVal = (rec.answers && rec.answers[q.id + '_link']) || '(blank)';
+      const textVal = (rec.answers && rec.answers[q.id + '_text']) || '(blank)';
+      return `<div class="q-block">
+        <h2>${q.label}</h2>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px;">Google Sheets link</div>
+        <div class="task-prompt">${escapeHtml(linkVal)}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin:10px 0 4px;">Summary</div>
+        <div class="task-prompt">${escapeHtml(textVal)}</div>
+      </div>`;
+    }
     const val = (rec.answers && rec.answers[q.id]) || '(blank)';
     return `<div class="q-block"><h2>${q.label}</h2><div class="task-prompt">${escapeHtml(val)}</div></div>`;
   }).join('');
@@ -618,7 +752,6 @@ window.viewAnswer = function(email){
   `;
 };
 
-/* ---------- boot ---------- */
 renderEntry();
 </script>
 </body>
