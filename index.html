@@ -149,6 +149,34 @@
   .eff{ font-weight:600; color:var(--teal); }
   .q-part{ margin-top:12px; font-size:13.5px; font-weight:600; color:var(--text); }
   .q-part-body{ font-size:13px; color:var(--text-dim); margin-top:3px; line-height:1.6; }
+  /* Paginated flow */
+  .notice{
+    background: var(--panel-2); border:1px solid var(--line); border-left:3px solid var(--teal);
+    border-radius:8px; padding:12px 15px; font-size:12.5px; line-height:1.6;
+    color:var(--text-dim); margin-bottom:16px;
+  }
+  .notice strong{ color: var(--teal); }
+  .qprogress{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text-dim); margin-bottom:16px;
+  }
+  .dots{ display:flex; gap:6px; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:var(--line); }
+  .dot.done{ background: var(--teal); }
+  .dot.active{ background: var(--accent); }
+  .nav-row{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    margin-top:26px; border-top:1px solid var(--line); padding-top:18px;
+  }
+  .nav-row .btn{ margin-top:0; }
+  .stage-btn{ margin-top:14px; }
+  .locked-answer{
+    background: var(--panel-2); border:1px solid var(--line); border-radius:7px;
+    padding:11px 12px; font-size:13.5px; line-height:1.6; white-space:pre-wrap; color:var(--text);
+  }
+  .locked-note{ font-size:11.5px; color:var(--text-dim); margin-top:6px; }
+  .stage-hint{ font-size:12.5px; color:var(--text-dim); margin-top:10px; font-style:italic; }
 </style>
 </head>
 <body>
@@ -157,7 +185,7 @@
 <script>
 const CONFIG = {
   TASK_TITLE: "Written Test Task",
-  INTRO_TEXT: `You'll have 90 minutes once you click Start. Questions 1–4 are required.`,
+  INTRO_TEXT: `You'll have 90 minutes once you click Start. All three questions are required, and you'll see them one at a time.`,
   DEADLINE_ISO: "2026-09-15T23:59:00",
   DURATION_MINUTES: 90,
   ADMIN_PASSWORD: "changeme123",
@@ -166,12 +194,14 @@ const CONFIG = {
   QUESTIONS: [
     {
       id: "q1",
-      type: "text",
+      type: "staged",
       label: "Question 1 — effect size selection",
       optional: false,
-      prompt: `<div style="white-space:normal;">
-<p style="margin:0 0 10px;font-size:13.5px;line-height:1.65;"><strong>Context.</strong> You are building a cost-effectiveness model for a radio family planning campaign being rolled out in Nigeria. The evidence base is a randomised controlled trial conducted in Burkina Faso (Glennerster et al., 2026). The trial evaluated a 2.5-year radio campaign promoting modern contraception across 16 radio station clusters — 8 treatment, 8 control. The study reports two main effect sizes on modern contraceptive prevalence rate (mCPR).</p>
-
+      context: `<div style="white-space:normal;">
+<p style="margin:0 0 10px;font-size:13.5px;line-height:1.65;"><strong>Context.</strong> You are building a cost-effectiveness model for a radio family planning campaign being rolled out in Nigeria. The evidence base is a randomised controlled trial conducted in Burkina Faso (Glennerster et al., 2026). The trial evaluated a 2.5-year radio campaign promoting modern contraception across 16 radio station clusters — 8 treatment, 8 control. The study reports two main effect sizes on modern contraceptive prevalence rate (mCPR): a population-level intention-to-treat estimate across all women of <strong>+5.9 percentage points</strong>, and an estimate restricted to women who owned a radio at baseline of <strong>+7.6 percentage points</strong>.</p>
+</div>`,
+      partAPrompt: `Which effect size would you use as the basis for your cost-effectiveness model — the population-level ITT estimate (all women, +5.9pp) or the radio owner estimate (+7.6pp) — and why?`,
+      evidence: `<div style="white-space:normal;">
 <div class="ev-box">
   <div class="ev-label">Figure — impact on mCPR (endline survey, December 2018)</div>
   <div class="chart-row">
@@ -259,13 +289,8 @@ const CONFIG = {
   </table>
   <div style="font-size:10.5px;color:var(--text-dim);margin-top:8px;">* p&lt;0.1 &nbsp;** p&lt;0.05 &nbsp;*** p&lt;0.01. &nbsp;Endline survey data, December 2018.</div>
 </div>
-
-<div class="q-part">Part A</div>
-<div class="q-part-body">Which effect size would you use as the basis for your cost-effectiveness model — the population-level ITT estimate (all women, +5.9pp) or the radio owner estimate (+7.6pp) — and why?</div>
-
-<div class="q-part" style="margin-top:10px;">Part B</div>
-<div class="q-part-body">Having reviewed the evidence above, would you change your answer? What does the difference in statistical significance between the two estimates tell you about which is more reliable for extrapolation to a new setting? What are the implications for cost-effectiveness modelling?</div>
-</div>`
+</div>`,
+      partBPrompt: `Having reviewed the evidence above, would you change your answer? What does the difference in statistical significance between the two estimates tell you about which is more reliable for extrapolation to a new setting? What are the implications for cost-effectiveness modelling?`
     },
     {
       id: "q2",
@@ -281,13 +306,6 @@ const CONFIG = {
       optional: false,
       linkPrompt: `Create a back-of-the-envelope calculation (BOTEC) in Google Sheets estimating the cost-effectiveness of a mass media campaign aimed at reducing intimate partner violence (IPV). Use your own numbers for inputs — you will not be assessed on the specific values chosen, only on your reasoning and model structure. Once complete, paste a shareable link below (ensure permissions are set to "Anyone with the link can view").`,
       textPrompt: `In the box below, summarise: (a) your key takeaways from the model, (b) the main assumptions you made and why, and (c) the most important limitations of your approach.`
-    },
-    {
-      id: "q4",
-      type: "text",
-      label: "Question 4",
-      optional: false,
-      prompt: "TBD — replace with your fourth question."
     }
   ]
 };
@@ -296,6 +314,7 @@ const app = document.getElementById('app');
 let record = null;
 let timerInterval = null;
 let violations = 0;
+let currentQ = 0;
 const usingBackend = !!CONFIG.BACKEND_URL;
 
 function fmtTime(ms){
@@ -369,6 +388,9 @@ function renderEntry(){
     <div class="eyebrow">Test Portal</div>
     <h1>${CONFIG.TASK_TITLE}</h1>
     <div class="sub">${CONFIG.INTRO_TEXT}</div>
+    <div class="notice">
+      <strong>Before you start.</strong> Tab and window switches are automatically logged during the test. We fully expect you to switch tabs — you'll need to in order to retrieve your GitHub or project link and to build your BOTEC in Google Sheets. This is normal and won't be held against you. The log simply forms part of the record.
+    </div>
     <div class="panel">
       <label>Full name</label>
       <input type="text" id="in-name" placeholder="Jane Candidate">
@@ -435,6 +457,7 @@ async function handleStart(){
       await saveRecord(record);
     }
     violations = record.violations || 0;
+    currentQ = Math.min(record.currentQ || 0, CONFIG.QUESTIONS.length - 1);
     renderTask();
     requestFullscreenSoft();
     attachMonitors();
@@ -463,44 +486,6 @@ function timeRemainingMs(){
 }
 
 function renderTask(){
-  const qBlocks = CONFIG.QUESTIONS.map(q=>{
-    const val = (record.answers && record.answers[q.id]) || '';
-
-    if(q.type === 'link'){
-      return `
-        <div class="q-block">
-          <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
-          <div class="sub" style="margin-bottom:8px;">${q.prompt}</div>
-          <input type="url" data-qid="${q.id}" class="q-input" placeholder="https://..." value="${val.replace(/"/g,'&quot;')}">
-        </div>`;
-    }
-
-    if(q.type === 'linktext'){
-      const linkVal = (record.answers && record.answers[q.id + '_link']) || '';
-      const textVal = (record.answers && record.answers[q.id + '_text']) || '';
-      return `
-        <div class="q-block">
-          <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
-          <div class="sub" style="margin-bottom:10px;white-space:normal;">${q.linkPrompt}</div>
-          <label>Google Sheets link</label>
-          <input type="url" data-qid="${q.id}_link" class="q-input" placeholder="https://docs.google.com/spreadsheets/..." value="${linkVal.replace(/"/g,'&quot;')}">
-          <label style="margin-top:16px;">Summary of takeaways, assumptions and limitations</label>
-          <div class="sub" style="margin-bottom:6px;font-size:13px;">${q.textPrompt}</div>
-          <textarea data-qid="${q.id}_text" class="q-input no-paste" placeholder="Write your summary here...">${textVal}</textarea>
-          <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in the summary field — please type your answer directly.</div>
-        </div>`;
-    }
-
-    /* default: text with prompt as HTML */
-    return `
-      <div class="q-block">
-        <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
-        <div class="sub" style="margin-bottom:8px;white-space:normal;">${q.prompt}</div>
-        <textarea data-qid="${q.id}" class="q-input no-paste" placeholder="Write your answer here...">${val}</textarea>
-        <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in this field — please type your answer directly.</div>
-      </div>`;
-  }).join('');
-
   app.innerHTML = `
     <div class="timer-bar">
       <div>
@@ -508,38 +493,183 @@ function renderTask(){
         <div class="timer" id="timer">--:--</div>
       </div>
       <div style="text-align:right">
-        <div class="flag" id="flag-count">0 tab-switch flags</div>
-        <div class="flag" style="margin-top:4px;">Autosaves as you type</div>
+        <div class="flag">Autosaves as you type</div>
+        <div class="flag" style="margin-top:4px;">Auto-submits when time runs out</div>
       </div>
+    </div>
+    <div class="notice">
+      Tab and window switches are automatically logged. We expect you to switch tabs — to retrieve your GitHub or project link, and to build your BOTEC in Google Sheets. That's normal and won't be held against you.
     </div>
     <div class="banner" id="banner"></div>
     <div class="panel">
-      ${qBlocks}
-      <button class="btn" id="btn-submit">Submit now</button>
-      <div id="submit-error" style="color:var(--danger); font-size:13px; margin-top:10px; display:none;"></div>
+      <div class="qprogress">
+        <span id="q-counter"></span>
+        <span class="dots" id="q-dots"></span>
+      </div>
+      <div id="q-container"></div>
+      <div id="submit-error" style="color:var(--danger); font-size:13px; margin-top:14px; display:none;"></div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" id="btn-back">← Back</button>
+        <button class="btn" id="btn-next">Next →</button>
+      </div>
     </div>
   `;
 
+  document.getElementById('btn-back').onclick = async ()=>{
+    await flushInputs();
+    if(currentQ > 0){ currentQ -= 1; renderQuestion(); }
+  };
+  document.getElementById('btn-next').onclick = async ()=>{
+    await flushInputs();
+    if(currentQ < CONFIG.QUESTIONS.length - 1){
+      currentQ += 1;
+      renderQuestion();
+    } else {
+      attemptSubmit(false);
+    }
+  };
+
+  renderQuestion();
+  clearInterval(timerInterval);
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+/* Writes whatever is currently on screen into the record and saves. */
+async function flushInputs(){
+  record.answers = record.answers || {};
   document.querySelectorAll('.q-input').forEach(el=>{
+    record.answers[el.dataset.qid] = el.value;
+  });
+  await saveRecord(record);
+}
+
+function renderQuestion(){
+  const q = CONFIG.QUESTIONS[currentQ];
+  const total = CONFIG.QUESTIONS.length;
+  const container = document.getElementById('q-container');
+  const ans = record.answers || {};
+  let html = '';
+
+  if(q.type === 'staged'){
+    const aVal = ans[q.id + '_a'] || '';
+    const bVal = ans[q.id + '_b'] || '';
+    const revealed = !!ans[q.id + '_revealed'];
+
+    html = `
+      <div class="q-block">
+        <h2>${q.label}</h2>
+        <div class="sub" style="margin-bottom:8px;white-space:normal;">${q.context}</div>
+
+        <div class="q-part">Part A</div>
+        <div class="q-part-body" style="margin-bottom:8px;">${q.partAPrompt}</div>
+        ${revealed
+          ? `<div class="locked-answer">${escapeHtml(aVal)}</div>
+             <div class="locked-note">Your Part A answer is locked now that the evidence has been released.</div>`
+          : `<textarea data-qid="${q.id}_a" class="q-input no-paste" placeholder="Write your answer here...">${aVal}</textarea>
+             <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in this field — please type your answer directly.</div>
+             <div class="stage-hint">Once you submit Part A, the underlying evidence will be released and Part B will appear. You won't be able to edit Part A after that.</div>
+             <button class="btn stage-btn" id="btn-reveal">Submit Part A &amp; view the evidence</button>
+             <div id="stage-error" style="color:var(--danger); font-size:13px; margin-top:10px; display:none;"></div>`
+        }
+
+        ${revealed ? `
+          <div style="margin-top:22px;">${q.evidence}</div>
+          <div class="q-part">Part B</div>
+          <div class="q-part-body" style="margin-bottom:8px;">${q.partBPrompt}</div>
+          <textarea data-qid="${q.id}_b" class="q-input no-paste" placeholder="Write your answer here...">${bVal}</textarea>
+          <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in this field — please type your answer directly.</div>
+        ` : ''}
+      </div>`;
+  } else if(q.type === 'link'){
+    const val = ans[q.id] || '';
+    html = `
+      <div class="q-block">
+        <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
+        <div class="sub" style="margin-bottom:8px;">${q.prompt}</div>
+        <input type="url" data-qid="${q.id}" class="q-input" placeholder="https://..." value="${val.replace(/"/g,'&quot;')}">
+      </div>`;
+  } else if(q.type === 'linktext'){
+    const linkVal = ans[q.id + '_link'] || '';
+    const textVal = ans[q.id + '_text'] || '';
+    html = `
+      <div class="q-block">
+        <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
+        <div class="sub" style="margin-bottom:10px;white-space:normal;">${q.linkPrompt}</div>
+        <label>Google Sheets link</label>
+        <input type="url" data-qid="${q.id}_link" class="q-input" placeholder="https://docs.google.com/spreadsheets/..." value="${linkVal.replace(/"/g,'&quot;')}">
+        <label style="margin-top:16px;">Summary of takeaways, assumptions and limitations</label>
+        <div class="sub" style="margin-bottom:6px;font-size:13px;">${q.textPrompt}</div>
+        <textarea data-qid="${q.id}_text" class="q-input no-paste" placeholder="Write your summary here...">${textVal}</textarea>
+        <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in the summary field — please type your answer directly.</div>
+      </div>`;
+  } else {
+    const val = ans[q.id] || '';
+    html = `
+      <div class="q-block">
+        <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
+        <div class="sub" style="margin-bottom:8px;white-space:normal;">${q.prompt}</div>
+        <textarea data-qid="${q.id}" class="q-input no-paste" placeholder="Write your answer here...">${val}</textarea>
+        <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in this field — please type your answer directly.</div>
+      </div>`;
+  }
+
+  container.innerHTML = html;
+  document.getElementById('submit-error').style.display = 'none';
+  record.currentQ = currentQ;
+
+  /* progress */
+  document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of ${total}`;
+  document.getElementById('q-dots').innerHTML = CONFIG.QUESTIONS
+    .map((_, i)=> `<span class="dot ${i === currentQ ? 'active' : (i < currentQ ? 'done' : '')}"></span>`)
+    .join('');
+
+  /* nav state */
+  const backBtn = document.getElementById('btn-back');
+  const nextBtn = document.getElementById('btn-next');
+  backBtn.style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+  nextBtn.textContent = currentQ === total - 1 ? 'Submit test' : 'Next →';
+
+  /* autosave + paste blocking on the fields now on screen */
+  container.querySelectorAll('.q-input').forEach(el=>{
     el.addEventListener('input', debounce(async ()=>{
       record.answers = record.answers || {};
       record.answers[el.dataset.qid] = el.value;
       await saveRecord(record);
     }, 800));
   });
-  document.querySelectorAll('.no-paste').forEach(el=>{
+  container.querySelectorAll('.no-paste').forEach(el=>{
     ['paste','drop'].forEach(evt=>{
       el.addEventListener(evt, (e)=>{
         e.preventDefault();
-        logViolation('blocked paste attempt');
+        logViolation('blocked paste attempt', 'Pasting is disabled in this field — please type your answer directly.');
       });
     });
     el.addEventListener('contextmenu', (e)=> e.preventDefault());
   });
-  document.getElementById('btn-submit').onclick = ()=> attemptSubmit(false);
-  updateFlagUI();
-  tick();
-  timerInterval = setInterval(tick, 1000);
+
+  /* Part A gate */
+  const revealBtn = document.getElementById('btn-reveal');
+  if(revealBtn){
+    revealBtn.onclick = async ()=>{
+      const ta = container.querySelector(`[data-qid="${q.id}_a"]`);
+      const errEl = document.getElementById('stage-error');
+      if(!ta.value.trim()){
+        errEl.textContent = 'Please answer Part A before the evidence is released.';
+        errEl.style.display = 'block';
+        return;
+      }
+      record.answers = record.answers || {};
+      record.answers[q.id + '_a'] = ta.value;
+      record.answers[q.id + '_revealed'] = true;
+      record.answers[q.id + '_revealedAt'] = new Date().toISOString();
+      await saveRecord(record);
+      renderQuestion();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  }
+
+  window.scrollTo({ top: 0 });
 }
 
 function debounce(fn, wait){
@@ -559,45 +689,48 @@ function tick(){
   }
 }
 
+function isIncomplete(q){
+  const ans = record.answers || {};
+  if(q.optional) return false;
+  if(q.type === 'staged'){
+    return !((ans[q.id + '_a'] || '').trim()) || !ans[q.id + '_revealed'] || !((ans[q.id + '_b'] || '').trim());
+  }
+  if(q.type === 'linktext'){
+    return !((ans[q.id + '_link'] || '').trim()) || !((ans[q.id + '_text'] || '').trim());
+  }
+  return !((ans[q.id] || '').trim());
+}
+
 function attemptSubmit(auto){
   if(!auto){
-    const missing = [];
-    CONFIG.QUESTIONS.forEach(q=>{
-      if(q.optional) return;
-      if(q.type === 'linktext'){
-        const linkVal = (record.answers && record.answers[q.id + '_link']) || '';
-        const textVal = (record.answers && record.answers[q.id + '_text']) || '';
-        if(!linkVal.trim() || !textVal.trim()) missing.push(q.label);
-      } else {
-        const val = (record.answers && record.answers[q.id]) || '';
-        if(!val.trim()) missing.push(q.label);
+    const firstMissing = CONFIG.QUESTIONS.findIndex(isIncomplete);
+    if(firstMissing !== -1){
+      const q = CONFIG.QUESTIONS[firstMissing];
+      if(firstMissing !== currentQ){
+        currentQ = firstMissing;
+        renderQuestion();
       }
-    });
-    if(missing.length){
       const err = document.getElementById('submit-error');
-      err.textContent = `Please complete: ${missing.join(', ')}`;
+      err.textContent = `Please complete ${q.label} before submitting.`;
       err.style.display = 'block';
       return;
     }
+    const remainingMin = Math.floor(timeRemainingMs() / 60000);
+    if(!confirm(`Submit your test now? You have ${remainingMin} minute${remainingMin===1?'':'s'} remaining and you won't be able to make changes after this.`)) return;
   }
   finishTest(auto);
 }
 
-async function logViolation(type){
+/* Violations are recorded silently for the reviewer. The applicant sees nothing
+   unless a userMessage is passed (used only for blocked pastes, where they need
+   to know why nothing appeared in the box). */
+async function logViolation(type, userMessage){
   violations += 1;
   record.violations = violations;
   record.violationLog = record.violationLog || [];
   record.violationLog.push({ type, at: new Date().toISOString() });
   await saveRecord(record);
-  updateFlagUI();
-  showBanner(`Flagged: ${type} detected at ${new Date().toLocaleTimeString()}. This is logged for the reviewer.`);
-}
-
-function updateFlagUI(){
-  const el = document.getElementById('flag-count');
-  if(!el) return;
-  el.textContent = `${violations} tab-switch flag${violations===1?'':'s'}`;
-  if(violations > 0) el.classList.add('warn');
+  if(userMessage) showBanner(userMessage);
 }
 
 function showBanner(msg){
@@ -635,13 +768,17 @@ function requestFullscreenSoft(){
   }catch(e){}
 }
 
+let finishing = false;
 async function finishTest(auto){
+  if(finishing) return;
+  finishing = true;
   clearInterval(timerInterval);
   document.querySelectorAll('.q-input').forEach(el=>{
     record.answers = record.answers || {};
     record.answers[el.dataset.qid] = el.value;
   });
   record.status = 'submitted';
+  record.autoSubmitted = !!auto;
   record.submittedTime = new Date().toISOString();
   await saveRecord(record);
   if(document.fullscreenElement){ document.exitFullscreen().catch(()=>{}); }
@@ -649,13 +786,30 @@ async function finishTest(auto){
 }
 
 function renderDone(auto){
-  app.innerHTML = `
-    <div class="panel center">
-      <div class="ok-icon">✓</div>
-      <h1>${auto ? "Time's up — submitted automatically" : 'Submitted'}</h1>
-      <div class="sub">Your response has been recorded${violations>0 ? ` along with ${violations} tab-switch flag${violations===1?'':'s'}` : ''}. You can close this window.</div>
-    </div>
-  `;
+  if(auto){
+    app.innerHTML = `
+      <div class="panel center">
+        <div class="ok-icon">⏱</div>
+        <h1>Time's up!</h1>
+        <div class="sub" style="margin-bottom:0;">
+          Your 90 minutes have elapsed and your answers have been submitted automatically.<br><br>
+          <strong>Thank you for your submission.</strong><br><br>
+          You can now close this window.
+        </div>
+      </div>
+    `;
+  } else {
+    app.innerHTML = `
+      <div class="panel center">
+        <div class="ok-icon">✓</div>
+        <h1>Submitted</h1>
+        <div class="sub" style="margin-bottom:0;">
+          <strong>Thank you for your submission.</strong><br><br>
+          Your response has been recorded. You can now close this window.
+        </div>
+      </div>
+    `;
+  }
 }
 
 function renderAdminLogin(){
@@ -729,6 +883,18 @@ window.viewAnswer = function(email){
   const el = document.getElementById('answer-detail');
   const logRows = (rec.violationLog||[]).map(v=>`<tr><td>${v.type}</td><td>${new Date(v.at).toLocaleString()}</td></tr>`).join('');
   const answerBlocks = CONFIG.QUESTIONS.map(q=>{
+    if(q.type === 'staged'){
+      const aVal = (rec.answers && rec.answers[q.id + '_a']) || '(blank)';
+      const bVal = (rec.answers && rec.answers[q.id + '_b']) || '(blank)';
+      const revealedAt = rec.answers && rec.answers[q.id + '_revealedAt'];
+      return `<div class="q-block">
+        <h2>${q.label}</h2>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px;">Part A — answered before seeing the evidence</div>
+        <div class="task-prompt">${escapeHtml(aVal)}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin:10px 0 4px;">Part B — answered after seeing the evidence${revealedAt ? ` (evidence released ${new Date(revealedAt).toLocaleString()})` : ''}</div>
+        <div class="task-prompt">${escapeHtml(bVal)}</div>
+      </div>`;
+    }
     if(q.type === 'linktext'){
       const linkVal = (rec.answers && rec.answers[q.id + '_link']) || '(blank)';
       const textVal = (rec.answers && rec.answers[q.id + '_text']) || '(blank)';
