@@ -172,10 +172,10 @@ const CONFIG = {
       // Always visible: context + Part A only. No evidence shown yet.
       contextHtml: `<p style="margin:0 0 14px;font-size:13.5px;line-height:1.65;"><strong>Context.</strong> You are building a cost-effectiveness model for a radio family planning campaign being rolled out in Nigeria. The evidence base is a randomised controlled trial conducted in Burkina Faso (Glennerster et al., 2026). The trial evaluated a 2.5-year radio campaign promoting modern contraception across 16 radio station clusters — 8 treatment, 8 control. The study reports two main effect sizes on modern contraceptive prevalence rate (mCPR).</p>
 <div class="q-part">Part A</div>
-<div class="q-part-body">Without yet seeing the underlying data, which would you expect to be the more reliable effect size to base a cost-effectiveness model on — an estimate measured across the full population, or one measured only among the subgroup with pre-existing access to the media channel (e.g. a working radio) — and why?</div>`,
+<div class="q-part-body">The paper shows a 5.9 percentage point increase in mCPR among all women (the intention-to-treat population) and a 7.7 percentage point increase among women with a radio at baseline. Which effect size and population group would you use in a cost-effectiveness model and why?</div>`,
       // Revealed only once Part A has an answer:
       evidenceHtml: `<div class="ev-box">
-  <div class="ev-label">Figure — impact on mCPR (endline survey, December 2018)</div>
+  <div class="ev-label">Figure: impact on mCPR (endline survey, December 2018)</div>
   <div class="chart-row">
     <div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;">All women (N = 6,728)</div>
@@ -217,7 +217,7 @@ const CONFIG = {
 </div>
 
 <div class="ev-box">
-  <div class="ev-label">Table — selected rows from Table 2 (Glennerster et al., 2022)</div>
+  <div class="ev-label">Table: selected rows from Table 2 (Glennerster et al., 2023)</div>
   <table class="ev-table">
     <thead>
       <tr>
@@ -267,7 +267,7 @@ const CONFIG = {
     {
       id: "q2",
       type: "text",
-      label: "Question 2 — Choosing a population data source for reach estimation",
+      label: "Question 2: Choosing a population data source for reach estimation",
       optional: false,
       prompt: `<p style="margin:0 0 12px;">Context. FEM uses gridded population estimates from WorldPop to estimate potential audience reach for radio campaigns as you scope new countries for 2027. WorldPop offers <a href="https://www.worldpop.org/methods/top_down_constrained_vs_unconstrained/" target="_blank" rel="noopener">two modeling approaches</a>: unconstrained, which assigns population to every land grid cell without checking where settlements actually are (avoids missing hard-to-detect rural settlements, but can misallocate population to uninhabited land and undercount dense cities), and constrained, which only assigns population to grid cells identified as containing buildings via satellite imagery (more accurate where settlement mapping is reliable, but can misallocate population where that mapping is imperfect, especially in remote areas).</p>
 <p style="margin:0 0 12px;">WorldPop also has released <a href="https://hub.worldpop.org/geodata/listing?id=135" target="_blank" rel="noopener">more recent constrained datasets</a> that are not adjusted to UN estimates, with projections through 2030.</p>
@@ -283,9 +283,9 @@ const CONFIG = {
     {
       id: "q3",
       type: "linktext",
-      label: "Question 3 — BOTEC: mass media and intimate partner violence",
+      label: "Question 3: Create a BOTEC for mass media and intimate partner violence",
       optional: false,
-      linkPrompt: `Create a back-of-the-envelope calculation (BOTEC) in Google Sheets estimating the cost-effectiveness of a mass media campaign aimed at reducing intimate partner violence (IPV). Use your own numbers for inputs — you will not be assessed on the specific values chosen, only on your reasoning and model structure. Once complete, paste a shareable link below (ensure permissions are set to "Anyone with the link can view").`,
+      linkPrompt: `Create a back-of-the-envelope calculation (BOTEC) in Google Sheets estimating the cost-effectiveness of a mass media campaign aimed at reducing intimate partner violence (IPV). Use your own numbers for inputs - you will not be assessed on the specific values chosen, only on your reasoning and model structure. Once complete, paste a shareable link below (ensure permissions are set to "Anyone with the link can view").`,
       textPrompt: `In the box below, summarise: (a) your key takeaways from the model, (b) the main assumptions you made and why, and (c) the most important limitations of your approach.`
     }
   ]
@@ -456,8 +456,9 @@ function renderAlreadySubmitted(rec){
 }
 
 function timeRemainingMs(){
+  const duration = Number(record.durationMinutes) || CONFIG.DURATION_MINUTES;
   const start = new Date(record.startTime).getTime();
-  const end = start + record.durationMinutes*60000;
+  const end = start + duration*60000;
   return end - Date.now();
 }
 
