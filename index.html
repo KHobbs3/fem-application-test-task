@@ -262,7 +262,7 @@ const CONFIG = {
   <div style="font-size:10.5px;color:var(--text-dim);margin-top:8px;">* p&lt;0.1 &nbsp;** p&lt;0.05 &nbsp;*** p&lt;0.01. &nbsp;Endline survey data, December 2018.</div>
 </div>`,
       partBPrompt: `<div class="q-part">Part B</div>
-<div class="q-part-body">Having reviewed the evidence above, would you change your answer? What does the difference in statistical significance between the two estimates tell you about which is more reliable for extrapolation to a new setting? What are the implications for cost-effectiveness modelling?</div>`
+<div class="q-part-body">Having reviewed the evidence above, would you change your answer? What does the difference in statistical significance between the two estimates tell you about which is more reliable for extrapolation to a new setting?</div>`
     },
     {
       id: "q2",
@@ -520,18 +520,17 @@ function questionBlockHtml(q){
   if(q.type === 'reveal'){
     const aVal = (record.answers && record.answers[q.id + 'a']) || '';
     const bVal = (record.answers && record.answers[q.id + 'b']) || '';
-    const revealed = aVal.trim().length > 0;
+    const revealed = isRevealed(q);
     return `
       <h2>${q.label}</h2>
       <div class="sub" style="margin-bottom:0;white-space:normal;">${q.contextHtml}</div>
       <textarea data-qid="${q.id}a" class="q-input no-paste" placeholder="Write your answer to Part A here...">${aVal}</textarea>
-      <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly. The evidence below unlocks once you've answered Part A.</div>
+      <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly. The evidence and Part B unlock when you click Next.</div>
       <div id="reveal-section" style="${revealed ? '' : 'display:none;'}margin-top:22px;">
         <div class="sub" style="margin-bottom:0;white-space:normal;">${q.evidenceHtml}${q.partBPrompt}</div>
         <textarea data-qid="${q.id}b" class="q-input no-paste" placeholder="Write your answer to Part B here...">${bVal}</textarea>
         <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly.</div>
-      </div>
-      <div id="reveal-hint" class="sub" style="${revealed ? 'display:none;' : ''}margin-top:14px;margin-bottom:0;font-size:12.5px;font-style:italic;">Answer Part A above to reveal the underlying evidence and Part B.</div>`;
+      </div>`;
   }
 
   /* default: text with prompt as HTML */
@@ -568,7 +567,22 @@ function renderQuestionPage(idx){
   if(isLast){
     document.getElementById('btn-submit').onclick = ()=> attemptSubmit(false);
   } else {
-    document.getElementById('btn-next').onclick = ()=> goToPage(idx + 1);
+    document.getElementById('btn-next').onclick = async ()=>{
+      if(q.type === 'reveal' && !isRevealed(q)){
+        flushCurrentInputs();
+        const aVal = (record.answers && record.answers[q.id + 'a']) || '';
+        const err = document.getElementById('submit-error');
+        if(!aVal.trim()){
+          err.textContent = 'Please answer Part A before continuing.';
+          err.style.display = 'block';
+          return;
+        }
+        err.style.display = 'none';
+        await revealSection(q);
+        return;
+      }
+      goToPage(idx + 1);
+    };
   }
 }
 
@@ -605,15 +619,21 @@ function attachQuestionListeners(q){
     el.addEventListener('contextmenu', (e)=> e.preventDefault());
   });
 
-  if(q.type === 'reveal'){
-    const aInput = document.querySelector(`[data-qid="${q.id}a"]`);
-    const section = document.getElementById('reveal-section');
-    const hint = document.getElementById('reveal-hint');
-    aInput.addEventListener('input', ()=>{
-      const shouldReveal = aInput.value.trim().length > 0;
-      section.style.display = shouldReveal ? '' : 'none';
-      hint.style.display = shouldReveal ? 'none' : '';
-    });
+}
+
+/* A reveal-type question stays locked until the candidate clicks Next once. */
+function isRevealed(q){
+  return !!(record.answers && record.answers[q.id + '_revealed']);
+}
+
+async function revealSection(q){
+  record.answers = record.answers || {};
+  record.answers[q.id + '_revealed'] = 'yes';
+  await saveRecord(record);
+  const section = document.getElementById('reveal-section');
+  if(section){
+    section.style.display = '';
+    section.scrollIntoView({ behavior:'smooth', block:'start' });
   }
 }
 
@@ -643,6 +663,10 @@ function attemptSubmit(auto){
         const linkVal = (record.answers && record.answers[q.id + '_link']) || '';
         const textVal = (record.answers && record.answers[q.id + '_text']) || '';
         if(!linkVal.trim() || !textVal.trim()) missing.push(q.label);
+      } else if(q.type === 'reveal'){
+        const aVal = (record.answers && record.answers[q.id + 'a']) || '';
+        const bVal = (record.answers && record.answers[q.id + 'b']) || '';
+        if(!aVal.trim() || !bVal.trim()) missing.push(q.label);
       } else {
         const val = (record.answers && record.answers[q.id]) || '';
         if(!val.trim()) missing.push(q.label);
@@ -813,6 +837,17 @@ window.viewAnswer = function(email){
         <div class="task-prompt">${escapeHtml(linkVal)}</div>
         <div style="font-size:12px;color:var(--text-dim);margin:10px 0 4px;">Summary</div>
         <div class="task-prompt">${escapeHtml(textVal)}</div>
+      </div>`;
+    }
+    if(q.type === 'reveal'){
+      const aVal = (rec.answers && rec.answers[q.id + 'a']) || '(blank)';
+      const bVal = (rec.answers && rec.answers[q.id + 'b']) || '(blank)';
+      return `<div class="q-block">
+        <h2>${q.label}</h2>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px;">Part A (before seeing the evidence)</div>
+        <div class="task-prompt">${escapeHtml(aVal)}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin:10px 0 4px;">Part B (after seeing the evidence)</div>
+        <div class="task-prompt">${escapeHtml(bVal)}</div>
       </div>`;
     }
     const val = (rec.answers && rec.answers[q.id]) || '(blank)';
