@@ -34,7 +34,7 @@
 const ADMIN_TOKEN = "changeme123"; // must match CONFIG.ADMIN_PASSWORD in the HTML
 
 const HEADERS = [
-  "email", "name", "startTime", "submittedTime", "status", "violations", "violationLog",
+  "email", "name", "startTime", "durationMinutes", "submittedTime", "status", "violations", "violationLog",
   "q1_github_link", "q2", "q3", "q4"
 ];
 
@@ -82,6 +82,7 @@ function recordToRow_(record) {
     record.email || "",
     record.name || "",
     record.startTime || "",
+    record.durationMinutes || "",
     record.submittedTime || "",
     record.status || "",
     record.violations || 0,
@@ -98,11 +99,12 @@ function rowToRecord_(row) {
     email: row[0],
     name: row[1],
     startTime: row[2],
-    submittedTime: row[3],
-    status: row[4],
-    violations: row[5],
-    violationLog: parseViolationLog_(row[6]),
-    answers: { q1: row[7], q2: row[8], q3: row[9], q4: row[10] }
+    durationMinutes: row[3],
+    submittedTime: row[4],
+    status: row[5],
+    violations: row[6],
+    violationLog: parseViolationLog_(row[7]),
+    answers: { q1: row[8], q2: row[9], q3: row[10], q4: row[11] }
   };
 }
 
