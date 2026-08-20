@@ -167,10 +167,10 @@ const CONFIG = {
     {
       id: "q1",
       type: "reveal",
-      label: "Question 1 — effect size selection",
+      label: "Question 1: effect size selection",
       optional: false,
       // Always visible: context + Part A only. No evidence shown yet.
-      contextHtml: `<p style="margin:0 0 14px;font-size:13.5px;line-height:1.65;"><strong>Context.</strong> You are building a cost-effectiveness model for a radio family planning campaign being rolled out in Nigeria. The evidence base is a randomised controlled trial conducted in Burkina Faso (Glennerster et al., 2026). The trial evaluated a 2.5-year radio campaign promoting modern contraception across 16 radio station clusters — 8 treatment, 8 control. The study reports two main effect sizes on modern contraceptive prevalence rate (mCPR).</p>
+      contextHtml: `<p style="margin:0 0 14px;font-size:13.5px;line-height:1.65;"><strong>Context.</strong> You are building a cost-effectiveness model for a radio family planning campaign being rolled out in Nigeria. The evidence base is a randomised controlled trial conducted in Burkina Faso (Glennerster et al., 2026). The trial evaluated a 2.5-year radio campaign promoting modern contraception across 16 radio station clusters: 8 treatment, 8 control. The study reports two main effect sizes on modern contraceptive prevalence rate (mCPR).</p>
 <div class="q-part">Part A</div>
 <div class="q-part-body">The paper shows a 5.9 percentage point increase in mCPR among all women (the intention-to-treat population) and a 7.7 percentage point increase among women with a radio at baseline. Which effect size and population group would you use in a cost-effectiveness model and why?</div>`,
       // Revealed only once Part A has an answer:
@@ -364,7 +364,7 @@ function pastDeadline(){ return new Date() > new Date(CONFIG.DEADLINE_ISO); }
 function renderEntry(){
   const deadlineStr = new Date(CONFIG.DEADLINE_ISO).toLocaleString(undefined, {dateStyle:'medium', timeStyle:'short'});
   app.innerHTML = `
-    ${!usingBackend ? `<div class="config-warn">BACKEND_URL isn't set — submissions stored in artifact only.</div>` : ''}
+    ${!usingBackend ? `<div class="config-warn">BACKEND_URL isn't set. Submissions stored in artifact only.</div>` : ''}
     <div class="eyebrow">Test Portal</div>
     <h1>${CONFIG.TASK_TITLE}</h1>
     <div class="sub">${CONFIG.INTRO_TEXT}</div>
@@ -373,6 +373,8 @@ function renderEntry(){
       <input type="text" id="in-name" placeholder="Jane Candidate">
       <label>Email</label>
       <input type="email" id="in-email" placeholder="jane@example.com">
+      <label>GitHub or a project you're most proud of <span style="font-weight:400;">(optional)</span></label>
+      <input type="url" id="in-github" placeholder="https://github.com/...">
       <div class="meta">
         <span>Deadline to start: ${deadlineStr}</span>
         <span>${CONFIG.DURATION_MINUTES} min once started</span>
@@ -389,6 +391,7 @@ function renderEntry(){
 async function handleStart(){
   const name = document.getElementById('in-name').value.trim();
   const email = document.getElementById('in-email').value.trim();
+  const preTestLink = document.getElementById('in-github').value.trim();
   const errEl = document.getElementById('entry-error');
   errEl.style.display = 'none';
 
@@ -420,9 +423,11 @@ async function handleStart(){
     }
     if(existing && existing.status === 'in_progress'){
       record = existing;
+      if(preTestLink) record.preTestLink = preTestLink;
     } else {
       record = {
         name, email,
+        preTestLink,
         startTime: new Date().toISOString(),
         durationMinutes: CONFIG.DURATION_MINUTES,
         answers: {},
@@ -509,7 +514,7 @@ function questionBlockHtml(q){
       <label style="margin-top:16px;">Summary of takeaways, assumptions and limitations</label>
       <div class="sub" style="margin-bottom:6px;font-size:13px;">${q.textPrompt}</div>
       <textarea data-qid="${q.id}_text" class="q-input no-paste" placeholder="Write your summary here...">${textVal}</textarea>
-      <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in the summary field — please type your answer directly.</div>`;
+      <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in the summary field. Please type your answer directly.</div>`;
   }
 
   if(q.type === 'reveal'){
@@ -520,11 +525,11 @@ function questionBlockHtml(q){
       <h2>${q.label}</h2>
       <div class="sub" style="margin-bottom:0;white-space:normal;">${q.contextHtml}</div>
       <textarea data-qid="${q.id}a" class="q-input no-paste" placeholder="Write your answer to Part A here...">${aVal}</textarea>
-      <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled — please type your answer directly. The evidence below unlocks once you've answered Part A.</div>
+      <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly. The evidence below unlocks once you've answered Part A.</div>
       <div id="reveal-section" style="${revealed ? '' : 'display:none;'}margin-top:22px;">
         <div class="sub" style="margin-bottom:0;white-space:normal;">${q.evidenceHtml}${q.partBPrompt}</div>
         <textarea data-qid="${q.id}b" class="q-input no-paste" placeholder="Write your answer to Part B here...">${bVal}</textarea>
-        <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled — please type your answer directly.</div>
+        <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly.</div>
       </div>
       <div id="reveal-hint" class="sub" style="${revealed ? 'display:none;' : ''}margin-top:14px;margin-bottom:0;font-size:12.5px;font-style:italic;">Answer Part A above to reveal the underlying evidence and Part B.</div>`;
   }
@@ -534,7 +539,7 @@ function questionBlockHtml(q){
     <h2>${q.label}${q.optional ? '<span class="optional-pill">Optional</span>' : ''}</h2>
     <div class="sub" style="margin-bottom:8px;white-space:normal;">${q.prompt}</div>
     <textarea data-qid="${q.id}" class="q-input no-paste" placeholder="Write your answer here...">${val}</textarea>
-    <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in this field — please type your answer directly.</div>`;
+    <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled in this field. Please type your answer directly.</div>`;
 }
 
 function renderQuestionPage(idx){
@@ -722,7 +727,7 @@ function renderDone(auto){
   app.innerHTML = `
     <div class="panel center">
       <div class="ok-icon">✓</div>
-      <h1>${auto ? "Time's up — submitted automatically" : 'Submitted'}</h1>
+      <h1>${auto ? "Time's up: submitted automatically" : 'Submitted'}</h1>
       <div class="sub">Your response has been recorded${violations>0 ? ` along with ${violations} tab-switch flag${violations===1?'':'s'}` : ''}. You can close this window.</div>
     </div>
   `;
@@ -758,11 +763,11 @@ async function renderAdminList(){
 
   const rows = records.map(r=>{
     const statusPill = r.status === 'submitted' ? `<span class="pill submitted">submitted</span>` : `<span class="pill progress">in progress</span>`;
-    const violPill = r.violations > 0 ? `<span class="pill violations">${r.violations} flags</span>` : '—';
+    const violPill = r.violations > 0 ? `<span class="pill violations">${r.violations} flags</span>` : '-';
     return `<tr>
       <td>${escapeHtml(r.name)}<br><span style="color:var(--text-dim)">${escapeHtml(r.email)}</span></td>
       <td>${new Date(r.startTime).toLocaleString()}</td>
-      <td>${r.submittedTime ? new Date(r.submittedTime).toLocaleString() : '—'}</td>
+      <td>${r.submittedTime ? new Date(r.submittedTime).toLocaleString() : '-'}</td>
       <td>${statusPill}</td>
       <td>${violPill}</td>
       <td><button class="btn btn-ghost" style="margin-top:0;padding:6px 10px;font-size:12px;" onclick="viewAnswer('${r.email.replace(/'/g,"\\'")}')">View</button></td>
@@ -772,7 +777,7 @@ async function renderAdminList(){
   window.__adminRecords = records;
 
   app.innerHTML = `
-    ${!usingBackend ? `<div class="config-warn">Not connected to Google Sheets — showing artifact storage only.</div>` : ''}
+    ${!usingBackend ? `<div class="config-warn">Not connected to Google Sheets. Showing artifact storage only.</div>` : ''}
     <div class="eyebrow">Test Portal</div>
     <h1>Submissions (${records.length})</h1>
     <div class="panel" style="overflow-x:auto;">
@@ -816,6 +821,7 @@ window.viewAnswer = function(email){
   el.innerHTML = `
     <div class="panel" style="margin-top:16px;">
       <div class="eyebrow">${escapeHtml(rec.name)}'s answers</div>
+      ${rec.preTestLink ? `<div class="q-block"><h2>GitHub / project link</h2><div class="task-prompt">${escapeHtml(rec.preTestLink)}</div></div>` : ''}
       ${answerBlocks}
       ${logRows ? `<div class="eyebrow" style="margin-top:6px;">Flag log</div><table><thead><tr><th>Type</th><th>Time</th></tr></thead><tbody>${logRows}</tbody></table>` : ''}
     </div>

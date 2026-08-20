@@ -35,7 +35,7 @@ const ADMIN_TOKEN = "changeme123"; // must match CONFIG.ADMIN_PASSWORD in the HT
 
 const HEADERS = [
   "email", "name", "startTime", "durationMinutes", "submittedTime", "status", "violations", "violationLog",
-  "q1_github_link", "q2", "q3", "q4"
+  "q1_github_link", "q2", "q3", "q4", "pre_test_link"
 ];
 
 function getSheet_() {
@@ -90,7 +90,8 @@ function recordToRow_(record) {
     answers.q1 || "",
     answers.q2 || "",
     answers.q3 || "",
-    answers.q4 || ""
+    answers.q4 || "",
+    record.preTestLink || ""
   ];
 }
 
@@ -104,7 +105,8 @@ function rowToRecord_(row) {
     status: row[5],
     violations: row[6],
     violationLog: parseViolationLog_(row[7]),
-    answers: { q1: row[8], q2: row[9], q3: row[10], q4: row[11] }
+    answers: { q1: row[8], q2: row[9], q3: row[10], q4: row[11] },
+    preTestLink: row[12]
   };
 }
 
