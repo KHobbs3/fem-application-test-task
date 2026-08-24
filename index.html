@@ -157,7 +157,7 @@
 <script>
 const CONFIG = {
   TASK_TITLE: "Written Test Task",
-  INTRO_TEXT: `You'll have 90 minutes once you click Start. You'll answer one question at a time. Questions 1–3 are required.`,
+  INTRO_TEXT: `You'll have 90 minutes once you click Start. You'll answer one question at a time. Questions 1-3 are required. Tab switches and window closures are logged for Questions 1 and 2 only, so please stay on this page once you begin.`,
   DEADLINE_ISO: "2026-09-15T23:59:00",
   DURATION_MINUTES: 90,
   ADMIN_PASSWORD: "changeme123",
@@ -170,9 +170,10 @@ const CONFIG = {
       label: "Question 1: effect size selection",
       optional: false,
       // Always visible: context + Part A only. No evidence shown yet.
-      contextHtml: `<p style="margin:0 0 14px;font-size:13.5px;line-height:1.65;"><strong>Context.</strong> You are building a cost-effectiveness model for a radio family planning campaign being rolled out in Nigeria. The evidence base is a randomised controlled trial conducted in Burkina Faso (Glennerster et al., 2026). The trial evaluated a 2.5-year radio campaign promoting modern contraception across 16 radio station clusters: 8 treatment, 8 control. The study reports two main effect sizes on modern contraceptive prevalence rate (mCPR).</p>
+      contextHtml: `<p style="margin:0 0 14px;font-size:13px;line-height:1.6;font-style:italic;color:var(--text-dim);">There's no single right answer here. We're more interested in how you think through the problem than which option you pick. The more considerations you can share, the better.</p>
+<p style="margin:0 0 14px;font-size:13.5px;line-height:1.65;"><strong>Context.</strong> You are building a cost-effectiveness model for a radio family planning campaign being rolled out in Nigeria. The evidence base is a randomised controlled trial conducted in Burkina Faso (Glennerster et al., 2026). The trial evaluated a 2.5-year radio campaign promoting modern contraception across 16 radio station clusters: 8 treatment, 8 control. The study reports two main effect sizes on modern contraceptive prevalence rate (mCPR).</p>
 <div class="q-part">Part A</div>
-<div class="q-part-body">The paper shows a 5.9 percentage point increase in mCPR among all women (the intention-to-treat population) and a 7.7 percentage point increase among women with a radio at baseline. Which effect size and population group would you use in a cost-effectiveness model and why?</div>`,
+<div class="q-part-body">The paper shows a 5.9 percentage point increase in mCPR among all women (the intention-to-treat population) and a 7.7 percentage point increase among women with a radio at baseline. Which effect size and population group would you use to estimate the impact of a campaign in a new country?</div>`,
       // Revealed only once Part A has an answer:
       evidenceHtml: `<div class="ev-box">
   <div class="ev-label">Figure: impact on mCPR (endline survey, December 2018)</div>
@@ -191,7 +192,7 @@ const CONFIG = {
           <div class="bar-tick">Treat.</div>
         </div>
       </div>
-      <div class="group-lbl">+5.9pp &nbsp;<span class="sig-lo">p = 0.046</span></div>
+      <div class="group-lbl">+5.9pp</div>
     </div>
     <div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;">Women with a radio at baseline (N = 3,877)</div>
@@ -207,7 +208,7 @@ const CONFIG = {
           <div class="bar-tick">Treat.</div>
         </div>
       </div>
-      <div class="group-lbl">+7.6pp &nbsp;<span class="sig-hi">p = 0.007</span></div>
+      <div class="group-lbl">+7.6pp</div>
     </div>
   </div>
   <div class="legend-row">
@@ -217,7 +218,7 @@ const CONFIG = {
 </div>
 
 <div class="ev-box">
-  <div class="ev-label">Table: selected rows from Table 2 (Glennerster et al., 2023)</div>
+  <div class="ev-label">Selected data from Glennerster et al., 2023</div>
   <table class="ev-table">
     <thead>
       <tr>
@@ -232,9 +233,9 @@ const CONFIG = {
       <tr class="hl">
         <td><strong>Currently using modern contraception (mCPR)</strong></td>
         <td>0.295</td>
-        <td class="eff">+0.059** <span class="sig-lo">p=0.046</span></td>
+        <td class="eff">+0.059**</td>
         <td>0.291</td>
-        <td class="eff">+0.076*** <span class="sig-hi">p=0.007</span></td>
+        <td class="eff">+0.076***</td>
       </tr>
       <tr>
         <td>Often listen to the radio</td>
@@ -251,7 +252,7 @@ const CONFIG = {
         <td>+0.193***</td>
       </tr>
       <tr>
-        <td>Sensitisation programs (listened last week)</td>
+        <td>Radio listenership (last week)</td>
         <td>0.133</td>
         <td>+0.097***</td>
         <td>0.145</td>
@@ -262,30 +263,42 @@ const CONFIG = {
   <div style="font-size:10.5px;color:var(--text-dim);margin-top:8px;">* p&lt;0.1 &nbsp;** p&lt;0.05 &nbsp;*** p&lt;0.01. &nbsp;Endline survey data, December 2018.</div>
 </div>`,
       partBPrompt: `<div class="q-part">Part B</div>
-<div class="q-part-body">Having reviewed the evidence above, would you change your answer? What does the difference in statistical significance between the two estimates tell you about which is more reliable for extrapolation to a new setting?</div>`
+<div class="q-part-body">Having reviewed the evidence above, would you change your answer?</div>`
     },
     {
       id: "q2",
       type: "text",
       label: "Question 2: Choosing a population data source for reach estimation",
       optional: false,
-      prompt: `<p style="margin:0 0 12px;">Context. FEM uses gridded population estimates from WorldPop to estimate potential audience reach for radio campaigns as you scope new countries for 2027. WorldPop offers <a href="https://www.worldpop.org/methods/top_down_constrained_vs_unconstrained/" target="_blank" rel="noopener">two modeling approaches</a>: unconstrained, which assigns population to every land grid cell without checking where settlements actually are (avoids missing hard-to-detect rural settlements, but can misallocate population to uninhabited land and undercount dense cities), and constrained, which only assigns population to grid cells identified as containing buildings via satellite imagery (more accurate where settlement mapping is reliable, but can misallocate population where that mapping is imperfect, especially in remote areas).</p>
+      prompt: `<p style="margin:0 0 4px;"><strong>Context.</strong></p>
+<p style="margin:0 0 12px;">FEM uses gridded population estimates from WorldPop to estimate potential audience reach for radio campaigns.</p>
+<p style="margin:0 0 12px;">WorldPop offers <a href="https://www.worldpop.org/methods/top_down_constrained_vs_unconstrained/" target="_blank" rel="noopener">two modeling approaches</a>: unconstrained, which assigns population to every land grid cell without checking where settlements actually are, and constrained, which only assigns population to grid cells identified as containing buildings via satellite imagery.</p>
 <p style="margin:0 0 12px;">WorldPop also has released <a href="https://hub.worldpop.org/geodata/listing?id=135" target="_blank" rel="noopener">more recent constrained datasets</a> that are not adjusted to UN estimates, with projections through 2030.</p>
-<p style="margin:0 0 12px;">Historically, reach estimates have used 2020 data adjusted to match UN population projections, which matters since partners benchmark your numbers against UN estimates.</p>
 <p style="margin:0 0 6px;"><strong>Available options:</strong></p>
 <ol style="margin:0 0 14px;padding-left:20px;">
   <li>Constrained, UN-adjusted, 2020</li>
   <li>Unconstrained, UN-adjusted, 2020</li>
-  <li>Constrained, not UN-adjusted, 2024 (projections through 2030)</li>
+  <li>Constrained, 2024 (projections through 2030)</li>
 </ol>
-<p style="margin:0;"><strong>Question.</strong> Which of these three would you recommend to your supervisor as the standard for reach estimation, and why?</p>`
+<details style="margin:0 0 12px;">
+  <summary style="cursor:pointer;font-weight:600;color:var(--teal);font-size:13.5px;">See more on methods (optional)</summary>
+  <div style="margin-top:8px;font-size:13.5px;line-height:1.6;">
+    <p style="margin:0 0 6px;">For more information on the approaches, see:</p>
+    <ul style="margin:0 0 8px;padding-left:20px;">
+      <li><a href="https://www.worldpop.org/methods/top_down_constrained_vs_unconstrained/" target="_blank" rel="noopener">Top-down estimation modelling: Constrained vs Unconstrained - WorldPop</a></li>
+      <li><a href="https://data.worldpop.org/repo/prj/Global_2015_2030/R2025A/doc/Global2_Release_Statement_R2025A_v1.pdf" target="_blank" rel="noopener">Individual Countries (2015-2023): Release Statement R2025A</a></li>
+    </ul>
+  </div>
+</details>
+<p style="margin:0 0 14px;font-style:italic;font-size:13px;color:var(--text-dim);">Note that not all the information is necessary to answer the questions.</p>
+<p style="margin:0;"><strong>Question.</strong> Imagine you are writing a Slack message to your supervisor: which of these three would you recommend as the standard for reach estimation, and why? Consider the tradeoffs between: methodology, data vintage, and where the radio campaigns may take place.</p>`
     },
     {
       id: "q3",
       type: "linktext",
       label: "Question 3: Create a BOTEC for mass media and intimate partner violence",
       optional: false,
-      linkPrompt: `Create a back-of-the-envelope calculation (BOTEC) in Google Sheets estimating the cost-effectiveness of a mass media campaign aimed at reducing intimate partner violence (IPV). Use your own numbers for inputs - you will not be assessed on the specific values chosen, only on your reasoning and model structure. Once complete, paste a shareable link below (ensure permissions are set to "Anyone with the link can view").`,
+      linkPrompt: `Create a back-of-the-envelope calculation (BOTEC) in Google Sheets estimating the cost-effectiveness of a radio mass media campaign aimed at reducing intimate partner violence. Use your own numbers for inputs - you will not be assessed on the specific values chosen, only on your reasoning and model structure. Once complete, paste a shareable link below (ensure permissions are set to "Anyone with the link can view").`,
       textPrompt: `In the box below, summarise: (a) your key takeaways from the model, (b) the main assumptions you made and why, and (c) the most important limitations of your approach.`
     }
   ]
@@ -376,7 +389,6 @@ function renderEntry(){
       <label>GitHub or a project you're most proud of <span style="font-weight:400;">(optional)</span></label>
       <input type="url" id="in-github" placeholder="https://github.com/...">
       <div class="meta">
-        <span>Deadline to start: ${deadlineStr}</span>
         <span>${CONFIG.DURATION_MINUTES} min once started</span>
       </div>
       <button class="btn" id="btn-start">Start test</button>
@@ -613,7 +625,7 @@ function attachQuestionListeners(q){
     ['paste','drop'].forEach(evt=>{
       el.addEventListener(evt, (e)=>{
         e.preventDefault();
-        logViolationDebounced('blocked paste attempt');
+        recordPasteViolation();
       });
     });
     el.addEventListener('contextmenu', (e)=> e.preventDefault());
@@ -682,14 +694,24 @@ function attemptSubmit(auto){
   finishTest(auto);
 }
 
-async function logViolation(type){
+async function recordViolation(type, opts={}){
   violations += 1;
   record.violations = violations;
   record.violationLog = record.violationLog || [];
   record.violationLog.push({ type, at: new Date().toISOString() });
   await saveRecord(record);
   updateFlagUI();
-  showBanner(`Flagged: ${type} detected at ${new Date().toLocaleTimeString()}. This is logged for the reviewer.`);
+  if(!opts.silent){
+    showBanner(`Flagged: ${type} detected at ${new Date().toLocaleTimeString()}. This is logged for the reviewer.`);
+  }
+}
+
+let lastPasteViolationAt = 0;
+function recordPasteViolation(){
+  const now = Date.now();
+  if(now - lastPasteViolationAt < 1500) return; // collapse near-simultaneous paste/drop events into one flag
+  lastPasteViolationAt = now;
+  recordViolation('blocked paste attempt', { silent: false });
 }
 
 function updateFlagUI(){
@@ -707,22 +729,35 @@ function showBanner(msg){
 }
 
 let monitorsAttached = false;
+let hiddenTimer = null;
+
+/* Tab-switch / window-closure monitoring is only active on Q1 and Q2, per the
+   notice shown on the entry page. It's intentionally turned off on Q3. */
+function isViolationTrackedPage(){
+  const q = CONFIG.QUESTIONS[currentPage];
+  return q && q.id !== 'q3';
+}
+
 function attachMonitors(){
   if(monitorsAttached) return;
   monitorsAttached = true;
+
+  /* Single source of truth for tab-switch detection. A switch only counts as
+     one flag, and only if the tab stays hidden for more than 2 seconds -
+     a quick accidental switch (or the fullscreen exit that naturally
+     accompanies switching tabs) won't trigger a flag on its own. */
   document.addEventListener('visibilitychange', ()=>{
-    if(document.hidden && record && record.status === 'in_progress'){
-      logViolation('tab switched / window minimized');
-    }
-  });
-  window.addEventListener('blur', ()=>{
-    if(record && record.status === 'in_progress' && document.hidden === false){
-      logViolation('window lost focus');
-    }
-  });
-  document.addEventListener('fullscreenchange', ()=>{
-    if(!document.fullscreenElement && record && record.status === 'in_progress'){
-      logViolation('exited fullscreen');
+    if(!record || record.status !== 'in_progress') return;
+    if(!isViolationTrackedPage()) return;
+
+    if(document.hidden){
+      if(hiddenTimer) clearTimeout(hiddenTimer);
+      hiddenTimer = setTimeout(()=>{
+        recordViolation('tab switched / window minimized', { silent: true });
+        hiddenTimer = null;
+      }, 2000);
+    } else {
+      if(hiddenTimer){ clearTimeout(hiddenTimer); hiddenTimer = null; }
     }
   });
 }
