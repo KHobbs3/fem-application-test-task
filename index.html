@@ -272,22 +272,75 @@ const CONFIG = {
       optional: false,
       prompt: `<p style="margin:0 0 4px;"><strong>Context.</strong></p>
 <p style="margin:0 0 12px;">FEM uses gridded population estimates from WorldPop to estimate potential audience reach for radio campaigns.</p>
-<p style="margin:0 0 12px;">WorldPop offers <a href="https://www.worldpop.org/methods/top_down_constrained_vs_unconstrained/" target="_blank" rel="noopener">two modeling approaches</a>: unconstrained, which assigns population to every land grid cell without checking where settlements actually are, and constrained, which only assigns population to grid cells identified as containing buildings via satellite imagery.</p>
-<p style="margin:0 0 12px;">WorldPop also has released <a href="https://hub.worldpop.org/geodata/listing?id=135" target="_blank" rel="noopener">more recent constrained datasets</a> that are not adjusted to UN estimates, with projections through 2030.</p>
+<p style="margin:0 0 12px;">WorldPop offers two modeling approaches: unconstrained, which assigns population to every land grid cell without checking where settlements actually are, and constrained, which only assigns population to grid cells identified as containing buildings via satellite imagery.</p>
+<p style="margin:0 0 12px;">WorldPop also has released more recent constrained datasets that are not adjusted to UN estimates, with projections through 2030.</p>
 <p style="margin:0 0 6px;"><strong>Available options:</strong></p>
 <ol style="margin:0 0 14px;padding-left:20px;">
   <li>Constrained, UN-adjusted, 2020</li>
   <li>Unconstrained, UN-adjusted, 2020</li>
   <li>Constrained, 2024 (projections through 2030)</li>
 </ol>
-<details style="margin:0 0 12px;">
-  <summary style="cursor:pointer;font-weight:600;color:var(--teal);font-size:13.5px;">See more on methods (optional)</summary>
-  <div style="margin-top:8px;font-size:13.5px;line-height:1.6;">
-    <p style="margin:0 0 6px;">For more information on the approaches, see:</p>
-    <ul style="margin:0 0 8px;padding-left:20px;">
-      <li><a href="https://www.worldpop.org/methods/top_down_constrained_vs_unconstrained/" target="_blank" rel="noopener">Top-down estimation modelling: Constrained vs Unconstrained - WorldPop</a></li>
-      <li><a href="https://data.worldpop.org/repo/prj/Global_2015_2030/R2025A/doc/Global2_Release_Statement_R2025A_v1.pdf" target="_blank" rel="noopener">Individual Countries (2015-2023): Release Statement R2025A</a></li>
+<p style="margin:0 0 8px;font-size:13px;color:var(--text-dim);">Reference material is included below - expand each section to read it here. You do not need to open anything in another tab.</p>
+
+<details style="margin:0 0 8px;">
+  <summary style="cursor:pointer;font-weight:600;color:var(--teal);font-size:13.5px;">Reference A: Top-down estimation modelling, constrained vs unconstrained</summary>
+  <div style="margin-top:8px;font-size:13px;line-height:1.6;">
+    <p style="margin:0 0 10px;font-size:12px;color:var(--text-dim);">Summarised from WorldPop, "Top-down estimation modelling: Constrained vs Unconstrained" (worldpop.org/methods), last updated February 2025.</p>
+
+    <p style="margin:0 0 10px;">Censuses remain the most accurate source of national and subnational population data, but they are usually published only as totals per administrative unit, which hides small-area variation and is awkward to combine with other spatial datasets. WorldPop's top-down methods take a global database of census and projection counts by administrative unit for each year from 2015 to 2030 and use geospatial covariates to break those counts down into grid cells, via a Random Forests approach. Two variants exist: estimation across every land grid square (unconstrained), and estimation restricted to areas mapped as containing built settlement (constrained). Published comparisons across several countries have found broadly similar accuracy at the national level, though performance varies country by country.</p>
+
+    <p style="margin:0 0 4px;"><strong>Unconstrained</strong></p>
+    <p style="margin:0 0 8px;">This approach has been developed and tested over roughly five years and produces global 100m age and sex structured layers annually for 2015 to 2030. Its starting assumption is that no settlement dataset is reliable enough to identify every residential building worldwide, so it declines to use one as a mask and instead predicts a population value for every land cell. WorldPop notes these datasets suit situations where satellite-based settlement mapping is itself uncertain, particularly for small rural settlements, but also notes that AI-driven improvements in building detection mean the constrained estimates are now likely to be more accurate in most settings.</p>
+    <ul style="margin:0 0 10px;padding-left:20px;">
+      <li>Advantage: less exposed to errors in building and settlement mapping.</li>
+      <li>Advantage: multi-temporal global coverage for every year 2015 to 2030.</li>
+      <li>Disadvantage: because every land cell receives a non-zero value, population is misallocated to genuinely uninhabited land, and urban populations can be underestimated in some places.</li>
     </ul>
+
+    <p style="margin:0 0 4px;"><strong>Constrained</strong></p>
+    <p style="margin:0 0 8px;">Settlement and building mapping from satellite imagery has improved enough in detail and coverage that it can now plausibly be used to mark where nobody lives, something earlier datasets did badly because they missed small and isolated buildings. The constrained approach combines building footprints from Maxar/Ecopia, Google and Microsoft with settlement maps from GHSL and WSF inside a built settlement growth model covering 2015 to 2030, then disaggregates population only into cells identified as containing residential buildings. WorldPop describes these as most appropriate where identifying rural populations and empty areas accurately matters most.</p>
+    <ul style="margin:0 0 10px;padding-left:20px;">
+      <li>Advantage: where buildings are mapped well, the resulting distribution is more realistic, without small populations scattered across empty land.</li>
+      <li>Disadvantage: accuracy depends directly on the settlement and building mapping.</li>
+      <li>Disadvantage: missed settlements push their population onto neighbouring ones; falsely detected settlements pull population away from real ones.</li>
+    </ul>
+
+    <p style="margin:0;">For both approaches, WorldPop advises weighing the age, resolution and accuracy of the underlying census and projection inputs, and notes that its bottom-up models may be a better fit for certain countries.</p>
+  </div>
+</details>
+
+<details style="margin:0 0 12px;">
+  <summary style="cursor:pointer;font-weight:600;color:var(--teal);font-size:13.5px;">Reference B: Global demographic data, release statement R2025A</summary>
+  <div style="margin-top:8px;font-size:13px;line-height:1.6;">
+    <p style="margin:0 0 10px;font-size:12px;color:var(--text-dim);">Summarised from WorldPop, "Global Demographic Data, Public release R2025A V1", September 2025.</p>
+
+    <p style="margin:0 0 4px;"><strong>What the release contains</strong></p>
+    <p style="margin:0 0 10px;">An open-access set of high-resolution gridded population datasets covering 242 countries, with annual age and sex structured estimates for 2015 to 2030 at roughly 100m resolution. WorldPop labels it an alpha release that may change over the coming year as improvements land, and explicitly invites users to report errors and anomalies, noting that the volume of underlying data makes checking every grid square impossible.</p>
+
+    <p style="margin:0 0 4px;"><strong>How it differs from the earlier 2000-2020 global data</strong></p>
+    <ul style="margin:0 0 10px;padding-left:20px;">
+      <li>Incorporates the circa-2020 round of censuses.</li>
+      <li>Expanded geospatial covariate library and an improved inland water mask.</li>
+      <li>Revised methods for projecting population totals and age-sex breakdowns.</li>
+      <li>National totals aligned to the UN World Population Prospects 2024 revision, on a 1 January reference date.</li>
+      <li>Updated settlement mapping and growth modelling using satellite-derived building footprints.</li>
+      <li>A new modelling approach that removes the "donut effect" seen in the older series, where density appeared to drain from city centres into surrounding rural areas between annual layers. The new series models the year-on-year difference on top of the preceding year rather than re-disaggregating the whole population each year.</li>
+    </ul>
+
+    <p style="margin:0 0 4px;"><strong>Stated assumptions and uncertainties</strong></p>
+    <ul style="margin:0 0 10px;padding-left:20px;">
+      <li>Input data are a global patchwork varying in vintage, administrative detail and quality, so accuracy differs substantially between countries and between years.</li>
+      <li>Where recent census data were unavailable, often in countries in conflict or without a census for over a decade, WorldPop substituted US Census Bureau subnational projections or UN Common Operational Datasets, which carry their own uncertainty.</li>
+      <li>Finer input administrative units generally produce more accurate grids. Countries with too few units to fit their own model were paired or grouped with others, importing some of those countries' patterns.</li>
+      <li>Uncertainty grows the further a reference year sits from the input census timepoints, which matters for the projected years, and the same applies to the interpolated settlement growth model.</li>
+      <li>For some countries, using two timepoints meant accepting less spatially detailed inputs than the older series. Outputs can therefore look coarser or capture dense urban areas less well, in exchange for more reliable totals and demographic breakdowns across broader areas.</li>
+      <li>A fixed global covariate set was used for consistency, so locally specific drivers of population distribution are not captured, and some countries could be modelled better with local factors.</li>
+      <li>Sudden displacement from conflict or disaster, seasonal mobility, and future rapid-onset events are not accounted for.</li>
+      <li>National totals are pinned to the UN's 2024 projections, which are assumed to be the best available at national level.</li>
+      <li>Comparisons between timepoints should be made cautiously, especially at small-area scale, and the rebuilt base grid does not align with the older 2000-2020 grid.</li>
+    </ul>
+
+    <p style="margin:0;">Nine territories were not modelled at all, being classified as uninhabited or as having static totals.</p>
   </div>
 </details>
 <p style="margin:0 0 14px;font-style:italic;font-size:13px;color:var(--text-dim);">Note that not all the information is necessary to answer the questions.</p>
@@ -388,16 +441,11 @@ function renderEntry(){
       <input type="email" id="in-email" placeholder="jane@example.com">
       <label>GitHub or a project you're most proud of <span style="font-weight:400;">(optional)</span></label>
       <input type="url" id="in-github" placeholder="https://github.com/...">
-      <div class="meta">
-        <span>${CONFIG.DURATION_MINUTES} min once started</span>
-      </div>
       <button class="btn" id="btn-start">Start test</button>
       <div id="entry-error" style="color:var(--danger); font-size:13px; margin-top:10px; display:none;"></div>
     </div>
-    <div class="footer-link"><a href="#" id="admin-link">Admin view</a></div>
   `;
   document.getElementById('btn-start').onclick = handleStart;
-  document.getElementById('admin-link').onclick = (e)=>{ e.preventDefault(); renderAdminLogin(); };
 }
 
 async function handleStart(){
@@ -490,8 +538,7 @@ function renderTask(){
         <div class="timer" id="timer">--:--</div>
       </div>
       <div style="text-align:right">
-        <div class="flag" id="flag-count">0 tab-switch flags</div>
-        <div class="flag" style="margin-top:4px;">Autosaves as you type</div>
+        <div class="flag">Autosaves as you type</div>
       </div>
     </div>
     <div class="banner" id="banner"></div>
@@ -702,7 +749,7 @@ async function recordViolation(type, opts={}){
   await saveRecord(record);
   updateFlagUI();
   if(!opts.silent){
-    showBanner(`Flagged: ${type} detected at ${new Date().toLocaleTimeString()}. This is logged for the reviewer.`);
+    showBanner(`Pasting is disabled for this question - please type your answer.`);
   }
 }
 
@@ -714,12 +761,9 @@ function recordPasteViolation(){
   recordViolation('blocked paste attempt', { silent: false });
 }
 
-function updateFlagUI(){
-  const el = document.getElementById('flag-count');
-  if(!el) return;
-  el.textContent = `${violations} tab-switch flag${violations===1?'':'s'}`;
-  if(violations > 0) el.classList.add('warn');
-}
+/* Flags are recorded silently and shown only in the admin view.
+   Nothing about them is surfaced to the candidate. */
+function updateFlagUI(){ /* intentionally empty */ }
 
 function showBanner(msg){
   const b = document.getElementById('banner');
@@ -787,7 +831,7 @@ function renderDone(auto){
     <div class="panel center">
       <div class="ok-icon">✓</div>
       <h1>${auto ? "Time's up: submitted automatically" : 'Submitted'}</h1>
-      <div class="sub">Your response has been recorded${violations>0 ? ` along with ${violations} tab-switch flag${violations===1?'':'s'}` : ''}. You can close this window.</div>
+      <div class="sub">Your response has been recorded. You can close this window.</div>
     </div>
   `;
 }
@@ -898,7 +942,14 @@ window.viewAnswer = function(email){
   `;
 };
 
-renderEntry();
+/* The admin view is no longer linked from the entry page. Reach it by adding
+   #admin to the end of the portal URL, e.g. https://yoursite.com/#admin
+   The password prompt still applies. */
+if(location.hash.toLowerCase() === '#admin'){
+  renderAdminLogin();
+} else {
+  renderEntry();
+}
 </script>
 </body>
 </html>
