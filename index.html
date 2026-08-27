@@ -70,6 +70,16 @@
   }
   input:focus, textarea:focus{ border-color: var(--accent); }
   textarea{ font-size: 14px; line-height:1.6; resize: vertical; min-height: 160px; }
+  textarea.locked{ opacity:0.75; cursor:not-allowed; border-style:dashed; }
+  textarea.locked:focus{ outline:none; box-shadow:none; }
+  .lock-note{ font-size:12px; margin-top:6px; display:flex; align-items:center; gap:6px; }
+  .lock-warn{ font-size:12.5px; line-height:1.55; margin-top:8px; padding:10px 12px; border-radius:6px;
+    background:rgba(176,120,96,0.10); border:1px solid rgba(176,120,96,0.35); }
+  .confirm-box{ margin-top:16px; padding:14px 16px; border-radius:8px;
+    background:rgba(176,120,96,0.10); border:1px solid rgba(176,120,96,0.45); }
+  .confirm-box p{ margin:0 0 12px; font-size:13.5px; line-height:1.6; }
+  .confirm-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .confirm-row .btn{ margin-top:0; }
   .btn{
     display:inline-flex; align-items:center; justify-content:center;
     background: var(--accent); color: #fff; border:none;
@@ -157,7 +167,7 @@
 <script>
 const CONFIG = {
   TASK_TITLE: "Written Test Task",
-  INTRO_TEXT: `You'll have 90 minutes once you click Start. You'll answer one question at a time. Questions 1-3 are required. Tab switches and window closures are logged for Questions 1 and 2 only, so please stay on this page once you begin.`,
+  INTRO_TEXT: `You'll have 90 minutes once you click Start. You'll answer one question at a time. Questions 1-3 are required. Question 1 has two parts, and Part A is submitted separately: once you submit it, it is locked and you cannot return to it. Everything else stays editable until you submit the test. Tab switches and window closures are logged for Questions 1 and 2 only, so please stay on this page once you begin.`,
   DEADLINE_ISO: "2026-09-15T23:59:00",
   DURATION_MINUTES: 90,
   ADMIN_PASSWORD: "changeme123",
@@ -170,10 +180,10 @@ const CONFIG = {
       label: "Question 1: effect size selection",
       optional: false,
       // Always visible: context + Part A only. No evidence shown yet.
-      contextHtml: `<p style="margin:0 0 14px;font-size:13px;line-height:1.6;font-style:italic;color:var(--text-dim);">There's no single right answer here. We're more interested in how you think through the problem than which option you pick. The more considerations you can share, the better.</p>
+      contextHtml: `<p style="margin:0 0 14px;font-size:13px;line-height:1.6;font-style:italic;color:var(--text-dim);">There's no single right answer here. We're more interested in how you think through the problem than which option you pick. </p>
 <p style="margin:0 0 14px;font-size:13.5px;line-height:1.65;"><strong>Context.</strong> You are building a cost-effectiveness model for a radio family planning campaign being rolled out in Nigeria. The evidence base is a randomised controlled trial conducted in Burkina Faso (Glennerster et al., 2026). The trial evaluated a 2.5-year radio campaign promoting modern contraception across 16 radio station clusters: 8 treatment, 8 control. The study reports two main effect sizes on modern contraceptive prevalence rate (mCPR).</p>
 <div class="q-part">Part A</div>
-<div class="q-part-body">The paper shows a 5.9 percentage point increase in mCPR among all women (the intention-to-treat population) and a 7.7 percentage point increase among women with a radio at baseline. Which effect size and population group would you use to estimate the impact of a campaign in a new country?</div>`,
+<div class="q-part-body">The paper shows a 5.9 percentage point increase in mCPR among all women (the intention-to-treat population) and a 7.7 percentage point increase among women with a radio at baseline. Which effect size and population group would you use to estimate the impact of a campaign in a new country? The more considerations you can share, the better.</div>`,
       // Revealed only once Part A has an answer:
       evidenceHtml: `<div class="ev-box">
   <div class="ev-label">Figure: impact on mCPR (endline survey, December 2018)</div>
@@ -232,31 +242,24 @@ const CONFIG = {
     <tbody>
       <tr class="hl">
         <td><strong>Currently using modern contraception (mCPR)</strong></td>
-        <td>0.295</td>
+        <td>29.5%</td>
         <td class="eff">+0.059**</td>
-        <td>0.291</td>
+        <td>29.1%</td>
         <td class="eff">+0.076***</td>
       </tr>
       <tr>
-        <td>Often listen to the radio</td>
-        <td>0.872</td>
-        <td>+0.023</td>
-        <td>0.882</td>
-        <td>+0.029</td>
+        <td>Has access to a radio in her household</td>
+        <td>55%</td>
+        <td>-</td>
+        <td>100%</td>
+        <td>-</td>
       </tr>
       <tr>
-        <td>Heard of FP on the radio in the last month</td>
-        <td>0.633</td>
-        <td>+0.170***</td>
-        <td>0.631</td>
-        <td>+0.193***</td>
-      </tr>
-      <tr>
-        <td>Radio listenership (last week)</td>
-        <td>0.133</td>
-        <td>+0.097***</td>
-        <td>0.145</td>
-        <td>+0.090***</td>
+        <td>Listen to the radio in the last week</td>
+        <td>29.3%</td>
+        <td>-</td>
+        <td>45.1%</td>
+        <td>-</td>
       </tr>
     </tbody>
   </table>
@@ -271,7 +274,7 @@ const CONFIG = {
       label: "Question 2: Choosing a population data source for reach estimation",
       optional: false,
       prompt: `<p style="margin:0 0 4px;"><strong>Context.</strong></p>
-<p style="margin:0 0 12px;">FEM uses gridded population estimates from WorldPop to estimate potential audience reach for radio campaigns.</p>
+<p style="margin:0 0 12px;">FEM uses gridded population estimates from WorldPop to estimate potential audience reach for radio campaigns. This is accomplished by layering a polygon representing the extent of a radio signal over a WorldPop population raster. </p>
 <p style="margin:0 0 12px;">WorldPop offers two modeling approaches: unconstrained, which assigns population to every land grid cell without checking where settlements actually are, and constrained, which only assigns population to grid cells identified as containing buildings via satellite imagery.</p>
 <p style="margin:0 0 12px;">WorldPop has also released a more recent constrained dataset (release R2025A), covering 2015-2030 and so including projections through 2030.</p>
 <p style="margin:0 0 6px;"><strong>Available options:</strong></p>
@@ -585,11 +588,17 @@ function questionBlockHtml(q){
     const aVal = (record.answers && record.answers[q.id + 'a']) || '';
     const bVal = (record.answers && record.answers[q.id + 'b']) || '';
     const revealed = isRevealed(q);
+    /* Part A is one-way: once submitted it becomes read-only so the candidate
+       cannot revise it in light of the evidence revealed afterwards. Every
+       other field in the test stays editable until final submission. */
     return `
       <h2>${q.label}</h2>
       <div class="sub" style="margin-bottom:0;white-space:normal;">${q.contextHtml}</div>
-      <textarea data-qid="${q.id}a" class="q-input no-paste" placeholder="Write your answer to Part A here...">${aVal}</textarea>
-      <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly. The evidence and Part B unlock when you click Next.</div>
+      <textarea data-qid="${q.id}a" class="q-input no-paste${revealed ? ' locked' : ''}"${revealed ? ' readonly aria-readonly="true"' : ''} placeholder="Write your answer to Part A here...">${aVal}</textarea>
+      ${revealed
+        ? `<div class="lock-note" style="color:var(--text-dim);">Part A is submitted and locked. Your other answers can still be edited until you submit the test.</div>`
+        : `<div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly.</div>
+           <div class="lock-warn"><strong>Part A can only be submitted once.</strong> When you submit it, your answer is locked and cannot be edited or returned to, and the evidence and Part B will unlock. Every other question in the test stays editable until you submit at the end.</div>`}
       <div id="reveal-section" style="${revealed ? '' : 'display:none;'}margin-top:22px;">
         <div class="sub" style="margin-bottom:0;white-space:normal;">${q.evidenceHtml}${q.partBPrompt}</div>
         <textarea data-qid="${q.id}b" class="q-input no-paste" placeholder="Write your answer to Part B here...">${bVal}</textarea>
@@ -612,16 +621,25 @@ function renderQuestionPage(idx){
 
   document.getElementById('progress-label').textContent = `Question ${idx + 1} of ${total}`;
 
+  const needsPartASubmit = q.type === 'reveal' && !isRevealed(q);
+
   const container = document.getElementById('qcontainer');
   container.innerHTML = `
     <div class="q-block" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
       ${questionBlockHtml(q)}
     </div>
+    <div id="confirm-lock" class="confirm-box" style="display:none;">
+      <p><strong>Submit Part A?</strong> Your answer will be locked and you will not be able to change it or come back to it. Part B and the evidence will then unlock.</p>
+      <div class="confirm-row">
+        <button class="btn" id="btn-confirm-lock" style="margin-top:0;">Yes, submit Part A</button>
+        <button class="btn btn-ghost" id="btn-cancel-lock" style="margin-top:0;">Keep editing</button>
+      </div>
+    </div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:24px;">
       <button class="btn btn-ghost" id="btn-back" style="margin-top:0;${idx===0 ? 'visibility:hidden;' : ''}">Back</button>
       ${isLast
         ? `<button class="btn" id="btn-submit" style="margin-top:0;">Submit now</button>`
-        : `<button class="btn" id="btn-next" style="margin-top:0;">Next</button>`}
+        : `<button class="btn" id="btn-next" style="margin-top:0;">${needsPartASubmit ? 'Submit Part A' : 'Next'}</button>`}
     </div>
   `;
 
@@ -631,6 +649,8 @@ function renderQuestionPage(idx){
   if(isLast){
     document.getElementById('btn-submit').onclick = ()=> attemptSubmit(false);
   } else {
+    const confirmBox = document.getElementById('confirm-lock');
+
     document.getElementById('btn-next').onclick = async ()=>{
       if(q.type === 'reveal' && !isRevealed(q)){
         flushCurrentInputs();
@@ -642,11 +662,24 @@ function renderQuestionPage(idx){
           return;
         }
         err.style.display = 'none';
-        await revealSection(q);
+        /* Ask before locking, so nobody loses the chance to edit by accident. */
+        confirmBox.style.display = 'block';
+        confirmBox.scrollIntoView({ behavior:'smooth', block:'center' });
         return;
       }
       goToPage(idx + 1);
     };
+
+    if(needsPartASubmit){
+      document.getElementById('btn-cancel-lock').onclick = ()=>{
+        confirmBox.style.display = 'none';
+      };
+      document.getElementById('btn-confirm-lock').onclick = async ()=>{
+        flushCurrentInputs();
+        confirmBox.style.display = 'none';
+        await revealSection(q);
+      };
+    }
   }
 }
 
@@ -657,8 +690,18 @@ function goToPage(idx){
   renderQuestionPage(currentPage);
 }
 
+/* A field is locked once its question has been submitted. Checked here as well
+   as in the markup, so removing the readonly attribute in devtools still
+   cannot overwrite an answer that has already been committed. */
+function isLockedField(qid){
+  return CONFIG.QUESTIONS.some(q =>
+    q.type === 'reveal' && qid === q.id + 'a' && isRevealed(q)
+  );
+}
+
 function flushCurrentInputs(){
   document.querySelectorAll('.q-input').forEach(el=>{
+    if(isLockedField(el.dataset.qid)) return;
     record.answers = record.answers || {};
     record.answers[el.dataset.qid] = el.value;
   });
@@ -668,6 +711,7 @@ function flushCurrentInputs(){
 function attachQuestionListeners(q){
   document.querySelectorAll('.q-input').forEach(el=>{
     el.addEventListener('input', debounce(async ()=>{
+      if(isLockedField(el.dataset.qid)) return;
       record.answers = record.answers || {};
       record.answers[el.dataset.qid] = el.value;
       await saveRecord(record);
@@ -694,6 +738,8 @@ async function revealSection(q){
   record.answers = record.answers || {};
   record.answers[q.id + '_revealed'] = 'yes';
   await saveRecord(record);
+  /* Re-render so Part A comes back read-only and the button reverts to Next. */
+  renderQuestionPage(currentPage);
   const section = document.getElementById('reveal-section');
   if(section){
     section.style.display = '';
@@ -821,6 +867,7 @@ function requestFullscreenSoft(){
 async function finishTest(auto){
   clearInterval(timerInterval);
   document.querySelectorAll('.q-input').forEach(el=>{
+    if(isLockedField(el.dataset.qid)) return;
     record.answers = record.answers || {};
     record.answers[el.dataset.qid] = el.value;
   });
