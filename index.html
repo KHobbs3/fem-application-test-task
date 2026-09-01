@@ -294,8 +294,8 @@ const CONFIG = {
   <li style="margin-bottom:4px;">monthly consumption, per facility and per contraceptive method; and</li>
   <li>the province the facility is located in.</li>
 </ul>
-<p style="margin:0 0 12px;padding:8px 10px;border-radius:6px;background:rgba(176,120,96,0.10);border:1px solid rgba(176,120,96,0.35);color:var(--text);">The data is private and cannot be shared with AI.</p>
-<p style="margin:0 0 10px;">Create an indicator to assess supply across the regions FEM would work in.</p>
+<p style="margin:0 0 12px;">The data is private and cannot be shared with AI.</p>
+<p style="margin:0 0 10px;"><strong>Create an indicator to assess supply across the regions FEM would work in.</strong></p>
 <p style="margin:0;">List the data sources you would use, any indicators you may develop, and any software tools (Python, R, Google Sheets, etc.) you would use for the analysis.</p></div>`,
       /* Revealed only once Part A has been submitted: */
       evidenceHtml: `<div class="q-part">Part B</div>
@@ -562,16 +562,32 @@ function questionBlockHtml(q){
     const revealed = isRevealed(q);
     /* Part A is one-way: once submitted it becomes read-only so the candidate
        cannot revise it in light of the evidence revealed afterwards. Every
-       other field in the test stays editable until final submission. */
-    return `
+       other field in the test stays editable until final submission.
+       Part B is not rendered at all until Part A is submitted, so there is no
+       hidden markup for a candidate to find. */
+    const partA = `
       <h2>${q.label}</h2>
       <div class="sub" style="margin-bottom:0;white-space:normal;">${q.contextHtml}</div>
-      <textarea data-qid="${q.id}a" class="q-input no-paste${revealed ? ' locked' : ''}"${revealed ? ' readonly aria-readonly="true"' : ''} placeholder="Write your answer to Part A here...">${aVal}</textarea>
-      ${revealed
-        ? `<div class="lock-note" style="color:var(--text-dim);">Part A is submitted and locked. Your other answers can still be edited until you submit the test.</div>`
-        : `<div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly.</div>
-           <div class="lock-warn"><strong>Part A can only be submitted once.</strong> When you submit it, your answer is locked and cannot be edited or returned to, and the evidence and Part B will unlock. Every other question in the test stays editable until you submit at the end.</div>`}
-      <div id="reveal-section" style="${revealed ? '' : 'display:none;'}margin-top:22px;">
+      <textarea data-qid="${q.id}a" class="q-input no-paste${revealed ? ' locked' : ''}"${revealed ? ' readonly aria-readonly="true"' : ''} placeholder="Write your answer to Part A here...">${aVal}</textarea>`;
+
+    if(!revealed){
+      return `${partA}
+      <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly.</div>
+      <div class="lock-warn"><strong>Part A can only be submitted once.</strong> When you submit it, your answer is locked and cannot be edited or returned to, and Part B will unlock. Every other question in the test stays editable until you submit at the end.</div>
+      <button class="btn" id="btn-submit-parta" style="margin-top:14px;">Submit Part A</button>
+      <div id="parta-error" style="color:var(--danger); font-size:13px; margin-top:10px; display:none;"></div>
+      <div id="confirm-lock" class="confirm-box" style="display:none;">
+        <p><strong>Submit Part A?</strong> Your answer will be locked and you will not be able to change it or come back to it. Part B will then unlock.</p>
+        <div class="confirm-row">
+          <button class="btn" id="btn-confirm-lock" style="margin-top:0;">Yes, submit Part A</button>
+          <button class="btn btn-ghost" id="btn-cancel-lock" style="margin-top:0;">Keep editing</button>
+        </div>
+      </div>`;
+    }
+
+    return `${partA}
+      <div class="lock-note" style="color:var(--text-dim);">Part A is submitted and locked. Your other answers can still be edited until you submit the test.</div>
+      <div id="reveal-section" style="margin-top:22px;">
         <div class="sub" style="margin-bottom:0;white-space:normal;">${q.evidenceHtml}${q.partBPrompt}</div>
         <textarea data-qid="${q.id}b" class="q-input no-paste" placeholder="Write your answer to Part B here...">${bVal}</textarea>
         <div class="sub" style="margin-top:4px;margin-bottom:0;font-size:12px;">Pasting is disabled. Please type your answer directly.</div>
@@ -600,18 +616,11 @@ function renderQuestionPage(idx){
     <div class="q-block" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
       ${questionBlockHtml(q)}
     </div>
-    <div id="confirm-lock" class="confirm-box" style="display:none;">
-      <p><strong>Submit Part A?</strong> Your answer will be locked and you will not be able to change it or come back to it. Part B and the evidence will then unlock.</p>
-      <div class="confirm-row">
-        <button class="btn" id="btn-confirm-lock" style="margin-top:0;">Yes, submit Part A</button>
-        <button class="btn btn-ghost" id="btn-cancel-lock" style="margin-top:0;">Keep editing</button>
-      </div>
-    </div>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:24px;">
       <button class="btn btn-ghost" id="btn-back" style="margin-top:0;${idx===0 ? 'visibility:hidden;' : ''}">Back</button>
       ${isLast
         ? `<button class="btn" id="btn-submit" style="margin-top:0;">Submit now</button>`
-        : `<button class="btn" id="btn-next" style="margin-top:0;">${needsPartASubmit ? 'Submit Part A' : 'Next'}</button>`}
+        : `<button class="btn" id="btn-next" style="margin-top:0;${needsPartASubmit ? 'display:none;' : ''}">Next</button>`}
     </div>
   `;
 
@@ -621,37 +630,37 @@ function renderQuestionPage(idx){
   if(isLast){
     document.getElementById('btn-submit').onclick = ()=> attemptSubmit(false);
   } else {
-    const confirmBox = document.getElementById('confirm-lock');
+    document.getElementById('btn-next').onclick = ()=> goToPage(idx + 1);
+  }
 
-    document.getElementById('btn-next').onclick = async ()=>{
-      if(q.type === 'reveal' && !isRevealed(q)){
-        flushCurrentInputs();
-        const aVal = (record.answers && record.answers[q.id + 'a']) || '';
-        const err = document.getElementById('submit-error');
-        if(!aVal.trim()){
-          err.textContent = 'Please answer Part A before continuing.';
-          err.style.display = 'block';
-          return;
-        }
-        err.style.display = 'none';
-        /* Ask before locking, so nobody loses the chance to edit by accident. */
-        confirmBox.style.display = 'block';
-        confirmBox.scrollIntoView({ behavior:'smooth', block:'center' });
+  /* Part A has its own submit button directly beneath it, so the candidate
+     never scrolls past unrevealed content to find it. */
+  if(needsPartASubmit){
+    const confirmBox = document.getElementById('confirm-lock');
+    const err = document.getElementById('parta-error');
+
+    document.getElementById('btn-submit-parta').onclick = ()=>{
+      flushCurrentInputs();
+      const aVal = (record.answers && record.answers[q.id + 'a']) || '';
+      if(!aVal.trim()){
+        err.textContent = 'Please answer Part A before submitting.';
+        err.style.display = 'block';
         return;
       }
-      goToPage(idx + 1);
+      err.style.display = 'none';
+      /* Ask before locking, so nobody loses the chance to edit by accident. */
+      confirmBox.style.display = 'block';
+      confirmBox.scrollIntoView({ behavior:'smooth', block:'center' });
     };
 
-    if(needsPartASubmit){
-      document.getElementById('btn-cancel-lock').onclick = ()=>{
-        confirmBox.style.display = 'none';
-      };
-      document.getElementById('btn-confirm-lock').onclick = async ()=>{
-        flushCurrentInputs();
-        confirmBox.style.display = 'none';
-        await revealSection(q);
-      };
-    }
+    document.getElementById('btn-cancel-lock').onclick = ()=>{
+      confirmBox.style.display = 'none';
+    };
+
+    document.getElementById('btn-confirm-lock').onclick = async ()=>{
+      flushCurrentInputs();
+      await revealSection(q);
+    };
   }
 }
 
@@ -710,11 +719,10 @@ async function revealSection(q){
   record.answers = record.answers || {};
   record.answers[q.id + '_revealed'] = 'yes';
   await saveRecord(record);
-  /* Re-render so Part A comes back read-only and the button reverts to Next. */
+  /* Re-render: Part A comes back read-only, Part B is added to the page. */
   renderQuestionPage(currentPage);
   const section = document.getElementById('reveal-section');
   if(section){
-    section.style.display = '';
     section.scrollIntoView({ behavior:'smooth', block:'start' });
   }
 }

@@ -23,7 +23,8 @@ const ADMIN_TOKEN = "changeme123"; // must match CONFIG.ADMIN_PASSWORD in the HT
 const HEADERS = [
   "email", "name", "pre_test_link", "startTime", "durationMinutes",
   "submittedTime", "status", "violations", "violationLog",
-  "q1a", "q1b", "q2a", "q2b", "q3_link", "q3_text"
+  "q1a", "q1b", "q1_revealed", "q2a", "q2b", "q2_revealed",
+  "q3_link", "q3_text"
 ];
 
 function getSheet_() {
@@ -78,8 +79,10 @@ function recordToRow_(record) {
     formatViolationLog_(record.violationLog),
     answers.q1a || "",
     answers.q1b || "",
+    answers.q1_revealed || "",
     answers.q2a || "",
     answers.q2b || "",
+    answers.q2_revealed || "",
     answers.q3_link || "",
     answers.q3_text || ""
   ];
@@ -96,7 +99,11 @@ function rowToRecord_(row) {
     status: row[6],
     violations: row[7],
     violationLog: parseViolationLog_(row[8]),
-    answers: { q1a: row[9], q1b: row[10], q2a: row[11], q2b: row[12], q3_link: row[13], q3_text: row[14] }
+    answers: {
+      q1a: row[9], q1b: row[10], q1_revealed: row[11],
+      q2a: row[12], q2b: row[13], q2_revealed: row[14],
+      q3_link: row[15], q3_text: row[16]
+    }
   };
 }
 
